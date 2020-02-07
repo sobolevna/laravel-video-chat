@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpJunior\LaravelVideoChat\Events;
+namespace Sobolevna\LaravelVideoChat\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;

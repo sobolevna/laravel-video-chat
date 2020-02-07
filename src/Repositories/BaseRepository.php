@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpJunior\LaravelVideoChat\Repositories;
+namespace Sobolevna\LaravelVideoChat\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
 

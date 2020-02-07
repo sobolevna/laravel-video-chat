@@ -15,8 +15,10 @@ class CreateConversationsTable extends Migration
     {
         Schema::create(config('laravel-video-chat.table.conversations_table'), function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('first_user_id');
-            $table->integer('second_user_id');
+            $table->string('name')->nullable();
+            $table->string('type')->nullable();
+            $table->boolean('is_accepted')->default(false);
+            
             $table->timestamps();
         });
     }

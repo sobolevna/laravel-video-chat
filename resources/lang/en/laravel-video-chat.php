@@ -14,7 +14,7 @@ return [
     'table' => [
         'conversations_table'       => 'conversations',
         'messages_table'            => 'messages',
-        'conversations_users_table' => 'conversations_users',
+        'group_users_table'         => 'conversations_users',
         'files_table'               => 'files',
     ],
     'channel' => [
@@ -23,8 +23,5 @@ return [
     ],
     'upload' => [
         'storage' => 'public',
-    ],
-    'settings' => [
-        'simple-users'=>false,
     ],
 ];

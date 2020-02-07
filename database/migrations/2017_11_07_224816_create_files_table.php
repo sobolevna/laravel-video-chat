@@ -17,7 +17,6 @@ class CreateFilesTable extends Migration
             $table->increments('id');
 
             $table->integer('conversation_id');
-            $table->string('conversation_type');
 
             $table->integer('message_id');
 

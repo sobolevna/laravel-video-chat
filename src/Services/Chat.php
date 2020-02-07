@@ -1,10 +1,10 @@
 <?php
 
-namespace PhpJunior\LaravelVideoChat\Services;
+namespace Sobolevna\LaravelVideoChat\Services;
 
 use Illuminate\Contracts\Config\Repository;
-use PhpJunior\LaravelVideoChat\Repositories\Conversation\ConversationRepository;
-use PhpJunior\LaravelVideoChat\Repositories\GroupConversation\GroupConversationRepository;
+use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
+use Sobolevna\LaravelVideoChat\Models\{Conversation};
 
 class Chat
 {
@@ -23,17 +23,14 @@ class Chat
      *
      * @param Repository                  $config
      * @param ConversationRepository      $conversation
-     * @param GroupConversationRepository $group
      */
     public function __construct(
         Repository $config,
-        ConversationRepository $conversation,
-        GroupConversationRepository $group
+        ConversationRepository $conversation
     ) {
         $this->config = $config;
         $this->conversation = $conversation;
         $this->userId = check() ? check()->user()->id : null;
-        $this->group = $group;
     }
 
     /**
@@ -51,7 +48,7 @@ class Chat
      */
     public function getConversationMessageById($conversationId)
     {
-        if ($this->conversation->checkUserExist($this->userId, $conversationId)) {
+        if ($this->conversation->checkUserExists($this->userId, $conversationId)) {
             $channel = $this->getChannelName($conversationId, 'chat_room');
 
             return $this->conversation->getConversationMessageById($conversationId, $this->userId, $channel);
@@ -66,7 +63,7 @@ class Chat
      */
     public function sendConversationMessage($conversationId, $text)
     {
-        $this->conversation->sendConversationMessage($conversationId, [
+        $this->conversation->sendMessage($conversationId, [
             'text'    => $text,
             'user_id' => $this->userId,
             'channel' => $this->getChannelName($conversationId, 'chat_room'),
@@ -111,115 +108,65 @@ class Chat
     }
 
     /**
-     * @param $groupName
+     * @param $conversationName
      * @param array $users
      */
-    public function createGroupConversation($groupName, array $users)
+    public function createConversation($conversationName, array $users)
     {
         $users[] = $this->userId;
-        $this->group->createGroupConversation($groupName, $users);
+        $this->conversation->createGroupConversation($conversationName, $users);
     }
 
     /**
-     * @return \Illuminate\Support\Collection
-     */
-    public function getAllGroupConversations()
-    {
-        return $this->group->getAllGroupConversations($this->userId);
-    }
-
-    /**
-     * @param $groupConversationId
-     *
-     * @return object
-     */
-    public function getGroupConversationMessageById($groupConversationId)
-    {
-        if ($this->group->checkUserExist($this->userId, $groupConversationId)) {
-            $channel = $this->getChannelName($groupConversationId, 'group_chat_room');
-
-            return $this->group->getGroupConversationMessageById($groupConversationId, $channel);
-        }
-
-        abort(404);
-    }
-
-    /**
-     * @param $groupConversationId
-     * @param $text
-     */
-    public function sendGroupConversationMessage($groupConversationId, $text)
-    {
-        $this->group->sendGroupConversationMessage($groupConversationId, [
-            'text'    => $text,
-            'user_id' => $this->userId,
-            'channel' => $this->getChannelName($groupConversationId, 'group_chat_room'),
-        ]);
-    }
-
-    /**
-     * @param $groupConversationId
+     * @param $conversationId
      * @param array $users
      */
-    public function removeMembersFromGroupConversation($groupConversationId, array $users)
+    public function removeMembers($conversationId, array $users)
     {
-        $this->group->removeMembersFromGroupConversation($groupConversationId, $users);
+        $this->conversation->removeMembers($conversationId, $users);
     }
 
     /**
-     * @param $groupConversationId
+     * @param $conversationId
      * @param array $users
      */
-    public function addMembersToExistingGroupConversation($groupConversationId, array $users)
+    public function addMembers($conversationId, array $users)
     {
-        $this->group->addMembersToExistingGroupConversation($groupConversationId, $users);
+        $this->conversation->addMembers($conversationId, $users);
     }
 
     /**
-     * @param $groupConversationId
+     * @param $conversationId
      */
-    public function leaveFromGroupConversation($groupConversationId)
+    public function leaveConversation($conversationId)
     {
-        $this->group->leaveFromGroupConversation($groupConversationId, $this->userId);
+        $this->conversation->leaveConversation($conversationId, $this->userId);
     }
 
     /**
      * @param $conversationId
      * @param $file
+     * @param $type
      */
-    public function sendFilesInConversation($conversationId, $file)
-    {
-        $this->sendFiles($conversationId, $file, 'conversation');
-    }
-
-    /**
-     * @param $groupConversationId
-     * @param $file
-     */
-    public function sendFilesInGroupConversation($groupConversationId, $file)
-    {
-        $this->sendFiles($groupConversationId, $file, 'group');
-    }
-
-    private function sendFiles($id, $file, $type)
+    public function sendFiles($conversationId, $file, $type = 'conversation')
     {
         switch ($type) {
             case 'conversation':
-                $this->conversation->sendFilesInConversation($id, [
+            default:
+                $this->conversation->sendMessage($conversationId, [
                     'file'    => $file,
                     'text'    => 'File Sent',
                     'user_id' => $this->userId,
-                    'channel' => $this->getChannelName($id, 'chat_room'),
-                ]);
-                break;
-            case 'group':
-                $this->group->sendFilesInConversation($id, [
-                    'file'    => $file,
-                    'text'    => 'File Sent',
-                    'user_id' => $this->userId,
-                    'channel' => $this->getChannelName($id, 'group_chat_room'),
+                    'channel' => $this->getChannelName($conversationId, 'chat_room'),
                 ]);
                 break;
         }
+    }
+    
+    public function addParticipant($conversationName, array $userData) {
+        $user = config('laravel-video-chat.user.model')::firstOrCreate($userData);
+        $conversation = Conversation::firstOrCreate(['name' => $conversationName]);
+        $this->addMembers($conversation->id, [$user->id]);
+        return true;
     }
 }

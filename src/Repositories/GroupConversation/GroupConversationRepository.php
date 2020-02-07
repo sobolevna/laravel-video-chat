@@ -6,14 +6,14 @@
  * Time: 11:27 PM.
  */
 
-namespace PhpJunior\LaravelVideoChat\Repositories\GroupConversation;
+namespace Sobolevna\LaravelVideoChat\Repositories\GroupConversation;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
-use PhpJunior\LaravelVideoChat\Events\NewGroupConversationMessage;
-use PhpJunior\LaravelVideoChat\Models\Group\Conversation\GroupConversation;
-use PhpJunior\LaravelVideoChat\Repositories\BaseRepository;
-use PhpJunior\LaravelVideoChat\Services\UploadManager;
+use Sobolevna\LaravelVideoChat\Events\NewGroupConversationMessage;
+use Sobolevna\LaravelVideoChat\Models\Group\Conversation\GroupConversation;
+use Sobolevna\LaravelVideoChat\Repositories\BaseRepository;
+use Sobolevna\LaravelVideoChat\Services\UploadManager;
 
 class GroupConversationRepository extends BaseRepository
 {
@@ -143,7 +143,7 @@ class GroupConversationRepository extends BaseRepository
     public function addMembersToExistingGroupConversation($groupConversationId, array $users)
     {
         $group = $this->find($groupConversationId);
-
+    
         if ($group) {
             $group->users()->attach($users);
 

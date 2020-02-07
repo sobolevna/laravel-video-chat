@@ -1,16 +1,15 @@
 <?php
 
-namespace PhpJunior\LaravelVideoChat;
+namespace Sobolevna\LaravelVideoChat;
 
 use Dflydev\ApacheMimeTypes\PhpRepository;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
-use PhpJunior\LaravelVideoChat\Facades\Chat;
-use PhpJunior\LaravelVideoChat\Repositories\Conversation\ConversationRepository;
-use PhpJunior\LaravelVideoChat\Repositories\GroupConversation\GroupConversationRepository;
-use PhpJunior\LaravelVideoChat\Services\Chat as ChatService;
-use PhpJunior\LaravelVideoChat\Services\UploadManager;
+use Sobolevna\LaravelVideoChat\Facades\Chat;
+use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
+use Sobolevna\LaravelVideoChat\Services\Chat as ChatService;
+use Sobolevna\LaravelVideoChat\Services\UploadManager;
 
 class LaravelVideoChatServiceProvider extends ServiceProvider
 {
@@ -21,8 +20,6 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Relation::morphMap(config('laravel-video-chat.relation'));
-
         $this->publishes([
             $this->configPath()     => config_path('laravel-video-chat.php'),
             $this->componentsPath() => base_path('resources/assets/js/components/laravel-video-chat'),
@@ -70,9 +67,8 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
         $this->app->bind('chat', function ($app) {
             $config = $app['config'];
             $conversation = $app['conversation.repository'];
-            $group = $app['group.conversation.repository'];
 
-            return new ChatService($config, $conversation, $group);
+            return new ChatService($config, $conversation);
         });
     }
 
@@ -83,14 +79,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
 
             return new ConversationRepository($manger);
         });
-        $this->app->alias('conversation.repository', ConversationRepository::class);
-
-        $this->app->singleton('group.conversation.repository', function ($app) {
-            $manger = $app['upload.manager'];
-
-            return new GroupConversationRepository($manger);
-        });
-        $this->app->alias('group.conversation.repository', GroupConversationRepository::class);
+        $this->app->alias('conversation.repository', ConversationRepository::class);        
     }
 
     protected function registerBroadcast()
@@ -104,14 +93,6 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
             }
         );
 
-        Broadcast::channel(
-            $this->app['config']->get('laravel-video-chat.channel.group_chat_room').'-{groupConversationId}',
-            function ($user, $groupConversationId) {
-                if ($this->app['group.conversation.repository']->canJoinGroupConversation($user, $groupConversationId)) {
-                    return $user;
-                }
-            }
-        );
     }
 
     /**
@@ -147,7 +128,6 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
     {
         return [
             'conversation.repository',
-            'group.conversation.repository',
             'upload.manager',
         ];
     }
