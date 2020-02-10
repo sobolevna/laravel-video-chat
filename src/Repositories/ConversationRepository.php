@@ -125,14 +125,20 @@ class ConversationRepository extends BaseRepository
     public function addMembers($conversationId, array $users)
     {
         $group = $this->find($conversationId);
-
-        if ($group) {
-            $group->users()->attach($users);
-
-            return true;
+                
+        if (!$group) {
+            return false;
         }
+        
+        $existingUsers = $group->whereHas('users', function($query) use($users){
+            $query->whereIn('users.id', $users);
+        })->get();
 
-        return false;
+        $group->users()->attach(collect($users)->except($existingUsers->pluck('id')));
+
+        return true;
+
+        
     }
     
     /**

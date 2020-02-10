@@ -61,7 +61,7 @@ class Chat
      * @param $conversationId
      * @param $text
      */
-    public function sendConversationMessage($conversationId, $text)
+    public function sendMessage($conversationId, $text)
     {
         $this->conversation->sendMessage($conversationId, [
             'text'    => $text,
@@ -167,6 +167,18 @@ class Chat
         $user = config('laravel-video-chat.user.model')::firstOrCreate($userData);
         $conversation = Conversation::firstOrCreate(['name' => $conversationName]);
         $this->addMembers($conversation->id, [$user->id]);
-        return true;
+        return ['conversation'=>$conversation, 'user'=>$user];
+    }
+    
+    /**
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return type
+     */
+    public function getUser(\Illuminate\Http\Request $request) {
+        if (!config('laravel-video-chat.settings.simple-users')) {
+            return ['id'=>auth()->user()->id];
+        }
+        return ['name' => $request->get('user')];
     }
 }
