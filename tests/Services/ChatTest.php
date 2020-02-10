@@ -9,12 +9,11 @@
 namespace Sobolevna\LaravelVideoChat\Tests;
 
 use Sobolevna\LaravelVideoChat\Models\{Conversation};
-//use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
 use Chat;
 
 /**
  * Description of ChatTest
- *
+ * @coversDefaultClass Chat
  * @author sobolevna
  */
 class ChatTest extends TestCase {
@@ -28,13 +27,16 @@ class ChatTest extends TestCase {
     }
     
     /**
+     * @covers Chat::addParticipant
      * @dataProvider providerAddParticipant
      * @param string $conversationName
      * @param array $userData
      */
     public function testAddParticipant($conversationName, array $userData) {
         $result = Chat::addParticipant($conversationName, $userData);
-        $this->assertTrue($result);
+        $this->assertNotNull($result);
+        $this->assertNotNull($result['conversation']);
+        $this->assertNotNull($result['user']);
         
         $conversation = Conversation::where('name', $conversationName)->first();
         $this->assertNotNull($conversation);
