@@ -88,7 +88,7 @@ class ConversationRepository extends BaseRepository
         $collection->users = $conversation->users;
         $collection->messages = $conversation->messages;
         $collection->files = $conversation->files;
-
+        
         return collect($collection);
     }
     
@@ -130,15 +130,14 @@ class ConversationRepository extends BaseRepository
             return false;
         }
         
-        $existingUsers = $group->whereHas('users', function($query) use($users){
-            $query->whereIn('users.id', $users);
-        })->get();
+        $existingUsers = $group->users()->whereIn('users.id', $users)->get()->pluck('id');
+        $usersToAdd = collect($users)->diff($existingUsers);
+        if ($usersToAdd->isEmpty()) {
+            return true;
+        }
 
-        $group->users()->attach(collect($users)->except($existingUsers->pluck('id')));
-
-        return true;
-
-        
+        $group->users()->attach($usersToAdd);
+        return true;        
     }
     
     /**
@@ -249,7 +248,7 @@ class ConversationRepository extends BaseRepository
 
         broadcast(new NewConversationMessage($data['text'], $data['channel'], $data['files']));
 
-        return true;        
+        return $data;        
         
     }
     

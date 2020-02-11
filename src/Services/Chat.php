@@ -42,7 +42,7 @@ class Chat
     }
 
     /**
-     * @param $conversationId
+     * @param int $conversationId
      *
      * @return object
      */
@@ -58,8 +58,8 @@ class Chat
     }
 
     /**
-     * @param $conversationId
-     * @param $text
+     * @param int $conversationId
+     * @param string $text
      */
     public function sendMessage($conversationId, $text)
     {
@@ -71,7 +71,7 @@ class Chat
     }
 
     /**
-     * @param $conversationId
+     * @param int $conversationId
      * @param array $data
      */
     public function startVideoCall($conversationId, array $data)
@@ -81,7 +81,7 @@ class Chat
     }
 
     /**
-     * @param $userId
+     * @param int $userId
      */
     public function startConversationWith($userId)
     {
@@ -89,7 +89,7 @@ class Chat
     }
 
     /**
-     * @param $conversationId
+     * @param int $conversationId
      */
     public function acceptMessageRequest($conversationId)
     {
@@ -97,8 +97,8 @@ class Chat
     }
 
     /**
-     * @param $conversationId
-     * @param $type
+     * @param int $conversationId
+     * @param string $type
      *
      * @return string
      */
@@ -108,7 +108,7 @@ class Chat
     }
 
     /**
-     * @param $conversationName
+     * @param int $conversationName
      * @param array $users
      */
     public function createConversation($conversationName, array $users)
@@ -118,7 +118,7 @@ class Chat
     }
 
     /**
-     * @param $conversationId
+     * @param int $conversationId
      * @param array $users
      */
     public function removeMembers($conversationId, array $users)
@@ -127,7 +127,7 @@ class Chat
     }
 
     /**
-     * @param $conversationId
+     * @param int $conversationId
      * @param array $users
      */
     public function addMembers($conversationId, array $users)
@@ -136,7 +136,7 @@ class Chat
     }
 
     /**
-     * @param $conversationId
+     * @param int $conversationId
      */
     public function leaveConversation($conversationId)
     {
@@ -153,7 +153,7 @@ class Chat
         switch ($type) {
             case 'conversation':
             default:
-                $this->conversation->sendMessage($conversationId, [
+                $ret = $this->conversation->sendMessage($conversationId, [
                     'file'    => $file,
                     'text'    => 'File Sent',
                     'user_id' => $this->userId,
@@ -161,8 +161,15 @@ class Chat
                 ]);
                 break;
         }
+        return $ret;
     }
     
+    /**
+     * 
+     * @param string $conversationName
+     * @param array $userData
+     * @return array
+     */
     public function addParticipant($conversationName, array $userData) {
         $user = config('laravel-video-chat.user.model')::firstOrCreate($userData);
         $conversation = Conversation::firstOrCreate(['name' => $conversationName]);
@@ -173,12 +180,12 @@ class Chat
     /**
      * 
      * @param \Illuminate\Http\Request $request
-     * @return type
+     * @return mixed
      */
-    public function getUser(\Illuminate\Http\Request $request) {
+    public function getUser(\Illuminate\Http\Request $request, $forCreate = true) {
         if (!config('laravel-video-chat.settings.simple-users')) {
-            return ['id'=>auth()->user()->id];
+            return $forCreate ? ['id'=>auth()->user()->id] : auth()->user();
         }
-        return ['name' => $request->get('user')];
+        return $forCreate ? ['name' => $request->get('user')] : \Sobolevna\LaravelVideoChat\Models\SimpleUser::where('name', $request->get('user'))->first();
     }
 }
