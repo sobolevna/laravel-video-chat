@@ -93,7 +93,7 @@
                 conversationId: this.conversation.conversationId,
                 channel: this.conversation.channel_name,
                 messages: this.conversation.messages,
-                withUser: this.conversation.user,
+                withUsers: this.conversation.users,
                 text: '',
                 showVideo: false,
                 openViduManager: new OpenViduManager,
@@ -105,7 +105,7 @@
                 let self = this;
                 this.openViduManager.startStreaming().then(()=>{
                     self.showVideo = true;
-                    var message = {from: Cookies.get('uuid'), to: self.withUser.id, type: 'signal', subtype: 'offer', content: '', time: new Date()};
+                    var message = {from: Cookies.get('uuid'), type: 'signal', subtype: 'offer', content: '', time: new Date()};
                     self.openViduManager.sendSignal('offer', JSON.stringify(message), ()=>axios.post('/trigger/' + self.conversationId, message));
                 }, (e)=>console.log(e));
             },
@@ -179,7 +179,7 @@
                 $('#incomingVideoCallModal').modal('hide');
                 self.showVideo = true;  
                 this.openViduManager.startStreaming().then(()=>{
-                    var message = {from: self.currentUser.id, to: self.withUser.id, type: 'signal', subtype: 'answer', content: '', time: new Date()};
+                    var message = {from: self.currentUser.id, type: 'signal', subtype: 'answer', content: '', time: new Date()};
                     //return axios.post('/trigger/' + self.conversationId, message);
                 });
             },
@@ -190,7 +190,7 @@
                 if (fromSignal) {
                     return;
                 }
-                var message = {from: self.currentUser.id, to: self.withUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
+                var message = {from: self.currentUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
                 this.openViduManager.sendSignal('close', JSON.stringify(message),()=>{
                     //axios.post('/trigger/'+this.conversationId, message);
                 });                
