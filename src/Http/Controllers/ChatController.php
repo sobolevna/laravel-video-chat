@@ -4,6 +4,7 @@ namespace Sobolevna\LaravelVideoChat\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Sobolevna\LaravelVideoChat\Facades\Chat;
+use Illuminate\Routing\Controller;
 
 class ChatController extends Controller
 {

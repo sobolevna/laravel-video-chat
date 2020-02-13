@@ -9,7 +9,7 @@
                     <div class="card-header">
                         <span class="glyphicon glyphicon-comment"></span> Сообщения 
 
-                        <button class="btn btn-primary btn-sm float-right" @click="startVideoCall(withUser.id)" type="button">
+                        <button class="btn btn-primary btn-sm float-right" @click="startVideoCall()" type="button">
                             <span class="fa fa-video-camera"></span> Видеозвонок
                         </button>
                     </div>

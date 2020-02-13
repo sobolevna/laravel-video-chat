@@ -23,6 +23,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
         $this->publishes([
             $this->configPath()     => config_path('laravel-video-chat.php'),
             $this->componentsPath() => base_path('resources/js/components/laravel-video-chat'),
+            __DIR__.'/../resources/js/openvidu-app.js' => base_path('resources/js/openvidu-app.js'),
         ]);
 
         $this->loadMigrationsFrom($this->migrationsPath());
@@ -119,7 +120,8 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
             'domain' => null,
             'namespace' => 'Sobolevna\LaravelVideoChat\Http\Controllers',
             'prefix' => 'chat',
-            'as' => 'chat.*'
+            'as' => 'chat.',
+            'middleware'=>['web'],
         ];
     }
 
@@ -144,7 +146,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
      */
     protected function componentsPath()
     {
-        return  __DIR__.'/../resources/assets/js/components';
+        return  __DIR__.'/../resources/js/components/laravel-video-chat';
     }
 
     /**
