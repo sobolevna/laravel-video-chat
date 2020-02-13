@@ -167,25 +167,13 @@ class Chat
     /**
      * 
      * @param string $conversationName
-     * @param array $userData
-     * @return array
+     * @param int $userId
+     * @return Conversation
      */
-    public function addParticipant($conversationName, array $userData) {
-        $user = config('laravel-video-chat.user.model')::firstOrCreate($userData);
+    public function addParticipant($conversationName, $userId) {
         $conversation = Conversation::firstOrCreate(['name' => $conversationName]);
-        $this->addMembers($conversation->id, [$user->id]);
-        return ['conversation'=>$conversation, 'user'=>$user];
+        $this->addMembers($conversation->id, [$userId]);
+        return $conversation;
     }
-    
-    /**
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return mixed
-     */
-    public function getUser(\Illuminate\Http\Request $request, $forCreate = true) {
-        if (!config('laravel-video-chat.settings.simple-users')) {
-            return $forCreate ? ['id'=>auth()->user()->id] : auth()->user();
-        }
-        return $forCreate ? ['name' => $request->get('user')] : \Sobolevna\LaravelVideoChat\Models\SimpleUser::where('name', $request->get('user'))->first();
-    }
+
 }

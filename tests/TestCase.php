@@ -10,7 +10,6 @@ namespace Sobolevna\LaravelVideoChat\Tests;
 
 use Orchestra\Testbench\TestCase as VendorTestCase;
 use Sobolevna\LaravelVideoChat\LaravelVideoChatServiceProvider;
-use \Sobolevna\LaravelVideoChat\Models\SimpleUser;
 
 abstract class TestCase extends VendorTestCase
 {
@@ -34,8 +33,7 @@ abstract class TestCase extends VendorTestCase
     public function setUp() : void
     { 
         parent::setUp();
-        
-        $this->artisan('migrate', ['--database' => 'testbench'])->run();
+        $this->loadLaravelMigrations();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
@@ -62,6 +60,6 @@ abstract class TestCase extends VendorTestCase
             'prefix'   => '',
         ]);
         $app['config']->set('laravel-video-chat.settings.simple-users', true);
-        $app['config']->set('laravel-video-chat.user.model', SimpleUser::class);
+        $app['config']->set('laravel-video-chat.user.model', Helpers\User::class);
     }
 }

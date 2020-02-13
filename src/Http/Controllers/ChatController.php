@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Sobolevna\LaravelVideoChat\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Sobolevna\LaravelVideoChat\Facades\Chat;
-use Sobolevna\LaravelVideoChat\Models\{Conversation, SimpleUser};
 
 class ChatController extends Controller
 {
@@ -26,11 +25,8 @@ class ChatController extends Controller
      */
     public function store(Request $request)
     {
-        $conversation = Chat::addParticipant($request->get('conversation'), Chat::getUser($request));
+        $conversation = Chat::addParticipant($request->get('conversation'), auth()->user()->id);
         $routeParams = ['id'=>$conversation->id];
-        if (config('laravel-video-chat.settings.simple-users')) {
-            $routeParams['user'] = $request->get('user');
-        }
         return redirect()->route('chat.show', $routeParams);
     }
 
@@ -40,7 +36,7 @@ class ChatController extends Controller
 
         return view('videochat.chat')->with([
             'conversation' => $conversation,
-            'user' => Chat::getUser($request)
+            'user' => auth()->user()
         ]);
     }
 

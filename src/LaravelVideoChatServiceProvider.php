@@ -3,13 +3,13 @@
 namespace Sobolevna\LaravelVideoChat;
 
 use Dflydev\ApacheMimeTypes\PhpRepository;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
 use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
 use Sobolevna\LaravelVideoChat\Services\Chat as ChatService;
 use Sobolevna\LaravelVideoChat\Services\UploadManager;
+use Illuminate\Support\Facades\Route;
 
 class LaravelVideoChatServiceProvider extends ServiceProvider
 {
@@ -22,7 +22,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
     {
         $this->publishes([
             $this->configPath()     => config_path('laravel-video-chat.php'),
-            $this->componentsPath() => base_path('resources/assets/js/components/laravel-video-chat'),
+            $this->componentsPath() => base_path('resources/js/components/laravel-video-chat'),
         ]);
 
         $this->loadMigrationsFrom($this->migrationsPath());
@@ -41,6 +41,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
         $this->registerChat();
         $this->registerUploadManager();
         $this->registerAlias();
+        $this->registerRoutes();
     }
 
     protected function registerFacade()
@@ -93,6 +94,33 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
             }
         );
 
+    }
+    
+    /**
+     * Register the package routes.
+     *
+     * @return void
+     */
+    private function registerRoutes()
+    {
+        Route::group($this->routeConfiguration(), function () {
+            $this->loadRoutesFrom(__DIR__.'/Http/routes.php');
+        });
+    }
+
+    /**
+     * Get the SmsUp route group configuration array.
+     *
+     * @return array
+     */
+    private function routeConfiguration()
+    {
+        return [
+            'domain' => null,
+            'namespace' => 'Sobolevna\LaravelVideoChat\Http\Controllers',
+            'prefix' => 'chat',
+            'as' => 'chat.*'
+        ];
     }
 
     /**

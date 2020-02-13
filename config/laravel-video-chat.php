@@ -25,6 +25,7 @@ return [
         'storage' => 'public',
     ],
     'settings' => [
-        'simple-users'=>false,
-    ],
+        'use-package-routes' =>true,
+        'controller' => \Sobolevna\LaravelVideoChat\Http\Controllers\ChatController::class,
+    ]
 ];

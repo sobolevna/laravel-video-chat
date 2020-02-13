@@ -22,8 +22,7 @@ class ChatTest extends TestCase {
     
     public function setUp() : void 
     {
-        parent::setUp();
-        //$this->chat = new \Sobolevna\LaravelVideoChat\Services\Chat(\config(), new ConversationRepository);        
+        parent::setUp();      
     }
     
     /**
@@ -33,18 +32,13 @@ class ChatTest extends TestCase {
      * @param array $userData
      */
     public function testAddParticipant($conversationName, array $userData) {
-        $result = Chat::addParticipant($conversationName, $userData);
+        $user = Helpers\User::firstOrCreate($userData);
+        $result = Chat::addParticipant($conversationName, $user->id);
         $this->assertNotNull($result);
-        $this->assertNotNull($result['conversation']);
-        $this->assertNotNull($result['user']);
         
         $conversation = Conversation::where('name', $conversationName)->first();
         $this->assertNotNull($conversation);
         $this->assertEquals($conversationName, $conversation->name);
-        
-        $user = config('laravel-video-chat.user.model')::where('name', $userData['name'])->first();
-        $this->assertNotNull($user);
-        $this->assertEquals($userData['name'], $user->name);
         
         $userCount = $conversation->users()->get()->count();
         $this->assertTrue($userCount > 0);
@@ -57,10 +51,16 @@ class ChatTest extends TestCase {
         return [
             [
                 'conversation1',
-                [
-                    'name' => 'user1'
-                ]
+                $this->makeUserData('user1')
             ]
+        ];
+    }
+    
+    protected function makeUserData($user) {
+        return [
+            'name' => $user,
+            'email' => $user.'@test.com',
+            'password' => $user,
         ];
     }
 }
