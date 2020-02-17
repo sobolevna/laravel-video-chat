@@ -2,17 +2,25 @@
     <div>
         <div class="row chat-room">            
             <div class="col-md-6" v-show="showVideo">
-                <video-section :visible="showVideo" @endCall="endCall()"></video-section>
+                <div :class="'videosection card '">
+                    <div class="card-body">
+                        <video-section :visible="showVideo" @endCall="endCall()"></video-section>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-danger" @click="endCall">Завершить</button> 
+                        <button class="btn btn-primary" @click="">Полный экран</button> 
+                    </div>
+                </div>
             </div>
             <div :class="showVideo ? 'col-md-6' : 'col-md-12'">
-                <div class="card bg-light">
-                    <div class="card-header">
+                <b-card no-body bg-variant="lite">
+                    <b-card-header>
                         <span class="glyphicon glyphicon-comment"></span> Сообщения 
 
                         <button class="btn btn-primary btn-sm float-right" @click="startVideoCall()" type="button">
                             <span class="fa fa-video-camera"></span> Видеозвонок
                         </button>
-                    </div>
+                    </b-card-header>
                     <ul class="chat card-body" v-chat-scroll>
                         <li class="clearfix" v-for="message in messages" v-bind:class="{ 'right' : check(message.sender.id), 'left' : !check(message.sender.id) }">
                             <span class="chat-img" v-bind:class="setMessageClasses(message.sender.id)">
@@ -28,15 +36,23 @@
                                 <p v-bind:class="setMessageClasses(message.sender.id)">
                                     {{ message.text }}
                                 </p>
+                                <div class="clearfix"></div>
                                 <div class="row">
                                     <file-preview :file="file" v-for="file in message.files" :key="file.id"></file-preview>
                                 </div>
                             </div>
                         </li>
                     </ul>
-                    <div class="card-footer">
+                    <b-card-footer>
                         <div class="input-group">
-                            <input id="btn-input" type="text" v-model="text" class="form-control input-sm" placeholder="Введите текст..." @keyup.enter="send()" />
+                            <b-form-textarea
+                                id="textarea"
+                                v-model="text"
+                                placeholder="Введите текст..."
+                                rows="1"
+                                max-rows="6"
+                                @keyup.enter="send()"
+                            ></b-form-textarea>
                             <span class="input-group-btn">
                                 <button class="btn btn-primary btn-sm" type="button" @click.prevent="send()" id="btn-chat" v-if="!loadingChat">
                                     Отправить
@@ -48,33 +64,26 @@
                             </span>
                         </div>
                         <div class="form-group">
-                            <div class="custom-file">
-                                <input type="file" multiple class="custom-file-input" id="fileInput" @change="prepareUpload">
-                                <label class="custom-file-label" for="fileInput" data-browse="Обзор">Выберите файлы...</label>
-                            </div>
+                            <b-form-file 
+                                multiple 
+                                browse-text="Обзор"
+                                v-model="filesForUpload"
+                                :state="Boolean(filesForUpload.length)"
+                                placeholder="Выберите файлы..."
+                                drop-placeholder="Опустите файлы..."
+                            ></b-form-file>
                         </div>
-                    </div>
-                </div>
+                    </b-card-footer>
+                </b-card>
             </div>
             
-            <div id="incomingVideoCallModal" class="modal" role="dialog">
-                <div class="modal-dialog">
-
-                    <!-- Modal content-->
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Входящий вызов</h4>
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" id="answerCallButton" class="btn btn-success" @click="answer()">Ответить</button>
-                            <button type="button" id="denyCallButton" data-dismiss="modal" class="btn btn-danger">Отклонить</button>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
+            <b-modal id="incomingVideoCallModal" title="Входящий вызов" v-model="incomingVideoCallModalShow">
+                <template slot="modal-footer">
+                    <button type="button" id="answerCallButton" class="btn btn-success" @click="answer()">Ответить</button>
+                    <button type="button" id="denyCallButton" data-dismiss="modal" class="btn btn-danger">Отклонить</button>
+                </template>
+            </b-modal>
+            
             <div class="row">
                 <file-preview :file="file" v-for="file in conversation.files" :key="file.id"></file-preview>
             </div>  
@@ -98,6 +107,7 @@
                 showVideo: false,
                 openViduManager: new OpenViduManager,
                 loadingChat: false,
+                incomingVideoCallModalShow: false,
             }
         },
         methods: {
@@ -126,6 +136,10 @@
                         message.files = response.data.files;
                         message.text = !message.text ? response.data.text: message.text;
                         this.sendMessage(message);
+                        this.filesForUpload = []
+                    }, (response)=>{
+                        alert('Произошла ошибка при отправке файлов');
+                        this.toggleLoadingChat(false);
                     });
                 }
                 else {
@@ -158,8 +172,8 @@
                 this.openViduManager.listenForSignal('message',(event)=>{
                     var data = JSON.parse(event.data);
                     if (data.files && data.files.length > 0) {
-                        $.each(data.files, function (key, value) {
-                            this.conversation.files.push(value);
+                        data.files.forEach((item) =>{
+                            this.conversation.files.push(item);
                         });
                     }
                     this.messages.push(data);
@@ -176,7 +190,7 @@
             },
             answer() {
                 var self = this;
-                $('#incomingVideoCallModal').modal('hide');
+                this.incomingVideoCallModalShow = false;
                 self.showVideo = true;  
                 this.openViduManager.startStreaming().then(()=>{
                     var message = {from: self.currentUser.id, type: 'signal', subtype: 'answer', content: '', time: new Date()};
@@ -184,26 +198,27 @@
                 });
             },
             endCall(fromSignal) {
-                var self = this;
                 this.showVideo = false;
                 this.openViduManager.stopStreaming();
                 if (fromSignal) {
                     return;
                 }
-                var message = {from: self.currentUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
+                var message = {from: this.currentUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
                 this.openViduManager.sendSignal('close', JSON.stringify(message),()=>{
                     //axios.post('/trigger/'+this.conversationId, message);
                 });                
             },
             handleCall() {
                 if (!this.showVideo) {
-                    $('#incomingVideoCallModal').modal('show');
+                    this.incomingVideoCallModalShow = true;
                 }
             },
             setMessageClasses(senderId) {
                 var obj = { 
-                    'float-right': this.check(senderId) , 
-                    'float-left' : !this.check(senderId)
+                    'float-right': this.check(senderId), 
+                    'text-right': this.check(senderId), 
+                    'float-left' : !this.check(senderId),
+                    'text-left' : !this.check(senderId),
                 };
                 return obj;
             },

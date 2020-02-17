@@ -1,8 +1,9 @@
 <template>
-    <div :class="'videosection card ' + (visible ? 'visible' : 'd-none') ">
-        <div class="card-body h-auto">
+    
+        
             <div class="video-container">
-                <div class="embed-responsive embed-responsive-4by3" id="remoteVideo" >
+                <div class="row" id="remoteVideo" >
+                    
                 </div>
                 <div class="embed-responsive embed-responsive-1by1 local-video-container video-fart">
                     <video id="localVideo" muted="muted" class="">
@@ -10,9 +11,8 @@
                     </video>
                 </div>
             </div>
-        </div>
-        <div class="card-footer"><button class="btn btn-danger" @click="finish">Завершить</button> <button class="btn btn-primary" @click="toggleFullScreen">Полный экран</button> </div>
-    </div>
+        
+        
 </template>
 
 <script>

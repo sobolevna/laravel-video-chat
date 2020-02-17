@@ -255,7 +255,7 @@ class ConversationRepository extends BaseRepository
     protected function createFiles(array $files, $conversation, $messageId, $userId) {
         foreach ($files as $file) {
             $fileName = Carbon::now()->format('YmdHis').'-'.$file->getClientOriginalName();
-            $path = str_finish('', '/').$fileName;
+            $path = \Str::finish('', '/').$fileName;
             $content = File::get($file->getRealPath());
             $result = $this->manager->saveFile($path, $content);
 

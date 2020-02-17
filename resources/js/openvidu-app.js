@@ -8,20 +8,30 @@ export function OpenViduManager() {
     var publisher;
 
     var manager = {
-        async joinSession(sessionId) {
+        async joinSession(sessionId, data, callbacks) {
             return new Promise((resolve, reject) => {
                 var mySessionId = sessionId || document.getElementById("sessionId").value;
                 session = OV.initSession();        
                 
                 session.on("streamCreated", function (event) {
-                    subscribers.push(session.subscribe(event.stream, "remoteVideo", {
+                    var subscriber = session.subscribe(event.stream, "remoteVideo", {
                         insertMode: 'APPEND'
-                    }));
+                    });
+                    subscriber.on('videoElementCreated', event => {
+
+                        // Add a new <p> element for the user's nickname just below its video
+                        var el = event.element;
+                        var wrapper = document.createElement('div');
+                        wrapper.className='col embed-responsive embed-responsive-4by3';
+                        el.parentNode.appendChild(wrapper);
+                        wrapper.appendChild(el);
+		});
+                    subscribers.push(subscriber);
                 });
 
                 getToken(mySessionId).then(token => {
                     session
-                            .connect(token)
+                            .connect(token, data)
                             .then(() => {
                                 resolve(session);
                             })
