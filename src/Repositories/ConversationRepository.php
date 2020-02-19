@@ -224,7 +224,7 @@ class ConversationRepository extends BaseRepository
      * @param $conversationId
      * @param array $data
      *
-     * @return bool
+     * @return array
      */
     public function sendMessage($conversationId, array $data)
     {
@@ -252,6 +252,13 @@ class ConversationRepository extends BaseRepository
         
     }
     
+    /**
+     * 
+     * @param array $files
+     * @param Conversation $conversation
+     * @param int $messageId
+     * @param int $userId
+     */
     protected function createFiles(array $files, $conversation, $messageId, $userId) {
         foreach ($files as $file) {
             $fileName = Carbon::now()->format('YmdHis').'-'.$file->getClientOriginalName();
@@ -267,5 +274,19 @@ class ConversationRepository extends BaseRepository
                 ]);
             }
         }
+    }
+    
+    /**
+     * 
+     * @param string $string
+     * @param string $finish
+     * @return string
+     */
+    protected function strFinish($string, $finish) {
+        if (function_exists('str_finish')) {
+            return str_finish($string, $finish);
+        }
+        
+        return Illuminate\Support\Str::finish($string, $finish);
     }
 }
