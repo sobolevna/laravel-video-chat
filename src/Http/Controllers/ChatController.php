@@ -27,18 +27,16 @@ class ChatController extends Controller
     public function store(Request $request)
     {
         $conversation = Chat::addParticipant($request->get('conversation'), auth()->user()->id);
-        $routeParams = ['id'=>$conversation->id];
-        return redirect()->route('chat.show', $routeParams);
+        return ['conversationId'=>$conversation->id];
     }
 
     public function show($id, Request $request)
     {
         $conversation = Chat::getConversationMessageById($id);
 
-        return view('videochat.chat')->with([
-            'conversation' => $conversation,
-            'user' => auth()->user()
-        ]);
+        return [
+            'conversation' => $conversation
+        ];
     }
 
     public function send(Request $request)
