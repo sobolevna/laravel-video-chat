@@ -22,7 +22,7 @@
                         </button>
                     </b-card-header>
                     <ul class="chat card-body" v-chat-scroll>
-                        <li class="clearfix" v-for="message in messages" v-bind:class="{ 'right' : check(message.sender.id), 'left' : !check(message.sender.id) }">
+                        <li class="clearfix" v-for="message in messages" :key="message.id" v-bind:class="{ 'right' : check(message.sender.id), 'left' : !check(message.sender.id) }">
                             <span class="chat-img" v-bind:class="setMessageClasses(message.sender.id)">
                                 <img :src="getSenderAvatar(message)" alt="User Avatar" class="img-circle" />
                             </span>
@@ -285,14 +285,11 @@
             overflow-y: scroll;
             height: 250px;
         }
-
-        .files-list {
-            /*display: none;*/
-        }
     }
     
     ::-webkit-scrollbar-track
     {
+        box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
         -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
         background-color: #F5F5F5;
     }
@@ -305,6 +302,7 @@
 
     ::-webkit-scrollbar-thumb
     {
+        box-shadow: inset 0 0 6px rgba(0,0,0,.3);
         -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
         background-color: #555;
     }
