@@ -25,7 +25,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
             $this->componentsPath() => base_path('resources/js/components/laravel-video-chat'),
             __DIR__.'/../resources/js/openvidu-app.js' => base_path('resources/js/openvidu-app.js'),
             __DIR__.'/../resources/js/views/laravel-video-chat' => base_path('resources/js/views/laravel-video-chat'),
-            __DIR__.'/../resources/js/router/laravel-video-chat.js' => base_path('resources/js/views/laravel-video-chat.js'),
+            __DIR__.'/../resources/js/router/laravel-video-chat.js' => base_path('resources/js/router/laravel-video-chat.js'),
         ]);
 
         $this->loadMigrationsFrom($this->migrationsPath());

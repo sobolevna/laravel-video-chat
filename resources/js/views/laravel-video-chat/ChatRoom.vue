@@ -20,6 +20,9 @@
                         <button class="btn btn-primary btn-sm float-right" @click="startVideoCall()" type="button">
                             <span class="fa fa-video-camera"></span> Видеозвонок
                         </button>
+                        <button class="btn btn-primary btn-sm float-right" @click="showRecordings()" type="button">
+                            <span class="fa fa-video-camera"></span> Видеозаписи
+                        </button>
                     </b-card-header>
                     <ul class="chat card-body" v-chat-scroll>
                         <li class="clearfix" v-for="message in messages" :key="message.id" v-bind:class="{ 'right' : check(message.sender.id), 'left' : !check(message.sender.id) }">
@@ -51,7 +54,7 @@
                                 placeholder="Введите текст..."
                                 rows="1"
                                 max-rows="6"
-                                @keyup.enter="send()"
+                                @keyup.ctrl.enter="send()"
                             ></b-form-textarea>
                             <span class="input-group-btn">
                                 <button class="btn btn-primary btn-sm" type="button" @click.prevent="send()" id="btn-chat" v-if="!loadingChat">
@@ -85,7 +88,7 @@
             </b-modal>
             
             <div class="row">
-                <file-preview :file="file" v-for="file in conversation.files" :key="file.id"></file-preview>
+                <file-preview :file="file" v-for="file in conversationFiles" :key="file.id"></file-preview>
             </div>  
         </div>        
     </div>
@@ -102,7 +105,7 @@
             VideoSection,
             FilePreview
         },
-        props: ['conversationId', 'currentUser'],
+        props: ['conversationId'],
         data() {
             return {
                 filesForUpload: [],
@@ -115,6 +118,8 @@
                 openViduManager: new OpenViduManager,
                 loadingChat: false,
                 incomingVideoCallModalShow: false,
+                currentUser: this.$store.state.auth.user,
+                conversationFiles: []
             }
         },
         methods: {
@@ -235,22 +240,36 @@
             getSenderAvatar(message) {
                 return message.sender.avatar || 'https://placehold.it/50/FA6F57/fff&text='+ message.sender.name;
             },
-            getConversationDetails(conversationId) {
+            async getConversationDetails(conversationId) {
                 axios.get(`/api/chat/${conversationId}`).then((response) =>{
-                    this.conversation = response.data; 
-                    this.messages = response.data.messages;
-                    this.withUsers = response.data.users;
-                    this.channel = response.data.channel;
+                    this.conversation = response.data.conversation; 
+                    this.conversationFiles = response.data.conversation.files
+                    this.messages = response.data.conversation.messages;
+                    this.withUsers = response.data.conversation.users;
+                    this.channel = response.data.conversation.channel;
                 }, (response)=>{
                     alert('При загрузке беседы произошла ошибка');
                     console.log(response);
                 });
+            },
+            showRecordings() {
+                axios.get(`/api/chat/${this.conversationId}/recordings`).then((response) => {
+                this.$router.push({
+                    path: 'recordings',
+                    props: {
+                        videos: response.data
+                    }
+                });
+                })
+                
             }
         },
         mounted() {
-            this.getConversationDetails(this.conversationId);
-            this.openViduManager.joinSession(this.conversationId)
+            this.getConversationDetails(this.conversationId).then(()=>{
+                this.openViduManager.joinSession(this.conversationId)
                     .then(()=>this.listenForNewMessage());
+            });
+            
         }
     }    
 

@@ -6,14 +6,13 @@
 
 <script>
     export default {
-        props: ['user'],
         data() {
             return {
                 
             }
         },
         mounted() {
-            this.$store.commit('setUser', this.user)
+            
         }
     }
 </script>

@@ -22,7 +22,7 @@
         methods: {
             addParticipant() {
                 axios.post('/api/chat').then((response)=>{
-                    this.$router.push('/api/chat/'+response.data.conversationId)
+                    this.$router.push('/chat/'+response.data.conversationId)
                 }, ()=>{
                     alert('Произошла ошибка при добавлении участника в беседу')
                 });

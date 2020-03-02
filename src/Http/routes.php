@@ -13,3 +13,7 @@ Route::post('/trigger/{id}' , function (\Illuminate\Http\Request $request , $id)
 Route::post('/chat/leave/{id}' , function ($id) {
     Chat::leaveFromGroupConversation($id);
 });
+
+Route::get('/{id}/recordings', 'ChatController@recordings')->name('recordings');
+Route::get('/{id}/preview', 'ChatController@preview')->name('preview');
+Route::get('/{id}/video', 'ChatController@video')->name('video');

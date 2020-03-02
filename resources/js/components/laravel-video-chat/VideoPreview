@@ -1,0 +1,16 @@
+<template>
+    <div class="col">
+        <img :src="video.preview_img" alt="" class="img-responsive" @click="playVideo">
+    </div>
+</template>
+
+<script>
+    export default {
+        props: ['video'],
+        methods: {
+            playVideo() {
+                this.$emit('play-video', this.video);
+            }
+        }
+    }
+</script>
