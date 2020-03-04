@@ -31,6 +31,6 @@ class CreateConversationsUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(config('laravel-video-chat.table.group_users_table'));
+        Schema::dropIfExists(config('laravel-video-chat.table.conversations_users_table'));
     }
 }
