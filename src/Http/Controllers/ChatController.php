@@ -60,14 +60,17 @@ class ChatController extends Controller
             if (!Storage::exists("video/$videoId/$videoId.mp4")) {
                 break;
             }
-            if (!Storage::exists("video/$videoId/$videoId.jpg")) {
-                continue;
+            if (Storage::exists("video/$videoId/$videoId.jpg")) {
+                $video['id'] = $videoId;
+                $video['img_preview'] = route('chat.preview', $videoId);
+                $video['url'] = route('chat.video', $videoId);
+                $videos[] = $video;
+                $i++;
             }
-            $video['id'] = $videoId;
-            $video['img_preview'] = route('chat.preview', $videoId);
-            $video['url'] = route('chat.video', $videoId);
-            $videos[] = $video;
-            $i++;
+            else {
+                break;
+            }
+            
         }
         return $videos;
     }
