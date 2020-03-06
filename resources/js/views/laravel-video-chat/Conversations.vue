@@ -1,5 +1,5 @@
 <template>
-    <b-container>
+    <b-card>
         <form @submit.prevent="addParticipant">
             <div class="form-group" >
                 <label>Название беседы <input type="text" name="conversation"></label>
@@ -8,7 +8,7 @@
                 <button type="submit">Войти в беседу</button>
             </div>
         </form>
-    </b-container>
+    </b-card>
 </template>
 
 <script>

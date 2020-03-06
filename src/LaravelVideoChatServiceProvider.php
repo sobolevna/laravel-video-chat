@@ -120,10 +120,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
     {
         return [
             'domain' => null,
-            'namespace' => 'Sobolevna\LaravelVideoChat\Http\Controllers',
-            'prefix' => 'api/chat',
-            'as' => 'api.chat.',
-            'middleware'=>['api', 'auth:api'],
+            
         ];
     }
 

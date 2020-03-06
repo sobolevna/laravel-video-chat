@@ -1,11 +1,15 @@
-<template>
-    <b-container class="laravel-video-chat">
+<template>    
+    <homepage>
         <router-view></router-view>
-    </b-container>
+    </homepage>        
 </template>
 
 <script>
+    import Homepage from '../../layouts/homepage';
     export default {
+        components: {
+            Homepage
+        },
         data() {
             return {
                 

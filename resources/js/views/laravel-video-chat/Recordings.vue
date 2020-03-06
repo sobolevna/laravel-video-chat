@@ -1,44 +1,50 @@
 <template>
     <b-container>
-        <b-row>
-            <video-preview :video="video" v-for="video in videos" :key="video.id" @play-video="playVideo"></video-preview>
-            
+        <b-row v-if="videos.length">
+            <video-preview :video="video" v-for="video in videos" :key="video.id" @play-video="playVideo"></video-preview>            
         </b-row>
-        <b-modal id="videoplayer" title="Входящий вызов" v-model="showVideoPlayer">
-            <div class="embed-responsive embed-responsive-4by3 local-video-container">
-                <video class="">
+        <b-card v-else>
+            Видеозаписи отсутствуют
+        </b-card>
+        <b-modal centered hide-footer id="videoplayer" title="Просмотр видео" v-model="showVideoPlayer">
+            <div class="embed-responsive embed-responsive-4by3 mx-auto">
+                <video controls class="">
                     Видео не поддерживается вашим браузером
-                    <source :src="currentVideo ? currentVideo.url : ''"/>
+                    <source :src="currentVideo ? currentVideo.url : ''" type="video/mp4" />
                 </video>
             </div>
-            <template slot="modal-footer">
-                
-            </template>
         </b-modal>
     </b-container>
 </template>
 
 <script>
+import VideoPreview from '../../components/laravel-video-chat/VideoPreview'
+
 export default {
-    props: {
-        videos: {
-            type: Array,
-            default() {
-                return [];
-            }
-        }
+    props:['videosProp', 'conversationId'],
+    components: {
+        VideoPreview
     },
     data(){
         return {
             showVideoPlayer: false,
             currentVideo: null,
+            videos: !this.videosProp || !this.videosProp.length ? [] : !this.videosProp
         }
     },
     methods: {
         playVideo(video) {
-            this.showVideoPlayer = !!this.showVideoPlayer; 
+            this.showVideoPlayer = !this.showVideoPlayer; 
             this.currentVideo = video
         }
+    },
+    mounted() {
+        if (!this.videos || !this.videos.length) {
+            axios.get(`/api/chat/${this.conversationId}/recordings`).then((response) => {
+                this.videos = response.data
+            })
+        }
+        
     }
 }
 </script>

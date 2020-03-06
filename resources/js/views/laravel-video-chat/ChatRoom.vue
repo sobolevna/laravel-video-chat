@@ -7,7 +7,7 @@
                         <video-section :visible="showVideo" @endCall="endCall()"></video-section>
                     </div>
                     <div class="card-footer">
-                        <button class="btn btn-danger" @click="endCall">Завершить</button> 
+                        <button class="btn btn-danger" @click="endCall()">Завершить</button> 
                         <!--<button class="btn btn-primary" @click="">Полный экран</button> -->
                     </div>
                 </div>
@@ -15,13 +15,13 @@
             <div :class="showVideo ? 'col-md-6' : 'col-md-12'">
                 <b-card no-body bg-variant="lite">
                     <b-card-header>
-                        <span class="glyphicon glyphicon-comment"></span> Сообщения 
+                        <b-icon icon="chat"></b-icon> Сообщения 
 
                         <button class="btn btn-primary btn-sm float-right" @click="startVideoCall()" type="button">
-                            <span class="fa fa-video-camera"></span> Видеозвонок
+                            <b-icon icon="camera-video-fill"></b-icon> Видеозвонок
                         </button>
-                        <button class="btn btn-primary btn-sm float-right" @click="showRecordings()" type="button">
-                            <span class="fa fa-video-camera"></span> Видеозаписи
+                        <button class="btn btn-info btn-sm float-right" @click="showRecordings()" type="button">
+                            <b-icon-play></b-icon-play>Видеозаписи
                         </button>
                     </b-card-header>
                     <ul class="chat card-body" v-chat-scroll>
@@ -58,6 +58,7 @@
                             ></b-form-textarea>
                             <span class="input-group-btn">
                                 <button class="btn btn-primary btn-sm" type="button" @click.prevent="send()" id="btn-chat" v-if="!loadingChat">
+                                    <b-icon icon="cursor"></b-icon> 
                                     Отправить
                                 </button>
                                 <button class="btn btn-primary btn-sm" type="button" disabled v-else>
@@ -127,8 +128,8 @@
                 let self = this;
                 this.openViduManager.startStreaming().then(()=>{
                     self.showVideo = true;
-                    var message = {from: Cookies.get('uuid'), type: 'signal', subtype: 'offer', content: '', time: new Date()};
-                    self.openViduManager.sendSignal('offer', JSON.stringify(message), ()=>axios.post('/trigger/' + self.conversationId, message));
+                    var message = {from: this.currentUser.id, type: 'signal', subtype: 'offer', content: '', time: new Date()};
+                    self.openViduManager.sendSignal('offer', JSON.stringify(message));
                 }, (e)=>console.log(e));
             },
             check(id) {
@@ -253,15 +254,9 @@
                 });
             },
             showRecordings() {
-                axios.get(`/api/chat/${this.conversationId}/recordings`).then((response) => {
                 this.$router.push({
-                    path: 'recordings',
-                    props: {
-                        videos: response.data
-                    }
-                });
-                })
-                
+                    path: this.conversationId+'/recordings'
+                });                
             }
         },
         mounted() {

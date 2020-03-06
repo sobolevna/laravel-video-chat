@@ -4,29 +4,31 @@ export function OpenViduManager() {
     var OV = new OpenVidu();
     var session;
 	
-    var subscribers = [];
-    var publisher;
-
     var manager = {
-        async joinSession(sessionId, data, callbacks) {
+        subscribers:[],
+        publisher: null,
+        joinSession(sessionId, data, callbacks) {
             return new Promise((resolve, reject) => {
                 var mySessionId = sessionId || document.getElementById("sessionId").value;
                 session = OV.initSession();        
                 
-                session.on("streamCreated", function (event) {
+                session.on("streamCreated", (event)=> {
                     var subscriber = session.subscribe(event.stream, "remoteVideo", {
                         insertMode: 'APPEND'
                     });
                     subscriber.on('videoElementCreated', event => {
-
-                        // Add a new <p> element for the user's nickname just below its video
-                        var el = event.element;
+                        var videoElement = event.element;
+                        if (subscriber.videos.find(item=>item.id == videoElement.id)) {
+                            return;
+                        }
+                        var remoteVideoContainer = videoElement.parentNode;
                         var wrapper = document.createElement('div');
                         wrapper.className='col embed-responsive embed-responsive-4by3';
-                        el.parentNode.appendChild(wrapper);
-                        wrapper.appendChild(el);
-		});
-                    subscribers.push(subscriber);
+                        remoteVideoContainer.removeChild(videoElement);
+                        wrapper.appendChild(videoElement);
+                        remoteVideoContainer.appendChild(wrapper);
+                    });
+                    this.subscribers.push(subscriber);
                 });
 
                 getToken(mySessionId).then(token => {
@@ -44,7 +46,7 @@ export function OpenViduManager() {
         startStreaming() {
             return new Promise((resolve, reject)=>{
                 try {
-                    publisher = OV.initPublisher(undefined, {
+                    this.publisher = OV.initPublisher(undefined, {
                         audioSource: undefined, // The source of audio. If undefined default microphone
                         videoSource: undefined, // The source of video. If undefined default webcam
                         publishAudio: true,  	// Whether you want to start publishing with your audio unmuted or not
@@ -54,8 +56,8 @@ export function OpenViduManager() {
                         insertMode: 'APPEND',	// How the video is inserted in the target element 'video-container'
                         mirror: false       	// Whether to mirror your local video or not
                     });
-                    publisher.addVideoElement(document.getElementById('localVideo'));
-                    session.publish(publisher);
+                    this.publisher.addVideoElement(document.getElementById('localVideo'));
+                    session.publish(this.publisher);
                     resolve(session);
                 }
                 catch(e) {
@@ -64,19 +66,17 @@ export function OpenViduManager() {
             });            
         },
         stopStreaming() {
-            return new Promise((resolve, reject)=>{
-                try {                    
-                    session.unpublish(publisher);
-                    for (let subscriber of subscribers) {
-                        session.unsubscribe(subscriber);
-                    }
-                    subscribers = [];
-                    resolve(session);
-                }
-                catch(e) {
-                    reject(e);
-                }
-            });                        
+            try {
+                session.unpublish(this.publisher);    
+                /*while (this.subscribers.length) {
+                    let subscriber = this.subscribers.pop();
+                    session.unsubscribe(subscriber);
+                }*/                    
+                
+            }
+            catch(e) {
+                console.log(e);
+            }
         },
         leaveSession() {
             session.disconnect();

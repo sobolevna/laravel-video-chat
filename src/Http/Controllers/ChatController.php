@@ -64,9 +64,9 @@ class ChatController extends Controller
                 continue;
             }
             $video['id'] = $videoId;
-            $video['img_preview'] = route('api.chat.preview', $videoId);
-            $video['url'] = route('api.chat.video', $videoId);
-            $videos[] = video;
+            $video['img_preview'] = route('chat.preview', $videoId);
+            $video['url'] = route('chat.video', $videoId);
+            $videos[] = $video;
             $i++;
         }
         return $videos;
