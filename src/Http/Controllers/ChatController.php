@@ -4,11 +4,18 @@ namespace Sobolevna\LaravelVideoChat\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Sobolevna\LaravelVideoChat\Facades\Chat;
+use Sobolevna\LaravelVideoChat\Services\Recordings;
 use Illuminate\Routing\Controller;
 use Storage;
 
 class ChatController extends Controller
 {
+    protected $recordings;
+
+    public function __construct() {
+        parent::__construct();
+        $this->recordings = new Recordings();
+    }
 
     /**
      * Show the application dashboard.
@@ -52,40 +59,14 @@ class ChatController extends Controller
     }
 
     public function recordings($id) {
-        $videos = [];
-        $i = 0;
-        while (true) {
-            $video = [];
-            $videoId = $i > 0 ? "$id-$i" : $id;
-            if (!Storage::exists("video/$videoId/$videoId.mp4")) {
-                break;
-            }
-            if (Storage::exists("video/$videoId/$videoId.jpg")) {
-                $video['id'] = $videoId;
-                $video['img_preview'] = route('chat.preview', $videoId);
-                $video['url'] = route('chat.video', $videoId);
-                $videos[] = $video;
-                $i++;
-            }
-            else {
-                break;
-            }
-            
-        }
-        return $videos;
+        return $this->recordings->recordings($id);
     }
 
     public function preview($id) {
-        $fileContents = Storage::disk('local')->get("video/{$id}/$id.jpg");
-        $response = \Illuminate\Support\Facades\Response::make($fileContents, 200);
-        $response->header('Content-Type', "image/jpeg");
-        return $response;
+        return $this->recordings->preview($id);
     }
 
     public function video($id) {
-        $fileContents = Storage::disk('local')->get("video/{$id}/$id.mp4");
-        $response = \Illuminate\Support\Facades\Response::make($fileContents, 200);
-        $response->header('Content-Type', "video/mp4");
-        return $response;
+        return $this->recordings->video($id);
     }
 }
