@@ -6,9 +6,11 @@
  * and open the template in the editor.
  */
 
-namespace Sobolevna\LaravelVideoChat\Tests;
+namespace Sobolevna\LaravelVideoChat\Tests\Services;
 
 use Sobolevna\LaravelVideoChat\Models\{Conversation};
+use Sobolevna\LaravelVideoChat\Tests\TestCase;
+use Sobolevna\LaravelVideoChat\Tests\Helpers;
 use Chat;
 
 /**

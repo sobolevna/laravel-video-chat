@@ -13,9 +13,19 @@ use Sobolevna\LaravelVideoChat\Services\Chat;
 class LaravelVideoChatServiceProviderTest extends TestCase
 {
 
-    public function testChatIsInjectable()
+    public function testFacades()
     {
-        //$this->assertIsInjectable(Chat::class);
-        $this->assertTrue(true);
+        $this->assertTrue(class_exists(\Chat::class));
+    }
+
+    public function testConfig() {
+        $this->assertNotEmpty(\config('laravel-video-chat'));
+    }
+
+    public function testMigrations() {
+        foreach (\config('laravel-video-chat.table') as $table) {
+            $this->assertTrue(\Schema::hasTable($table));
+        }
+        
     }
 }
