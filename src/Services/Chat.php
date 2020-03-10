@@ -13,10 +13,8 @@ class Chat
     protected $conversation;
 
     protected $userId;
-    /**
-     * @var GroupConversationRepository
-     */
-    protected $group;
+
+    protected $recordings;
 
     /**
      * Chat constructor.
@@ -31,6 +29,7 @@ class Chat
         $this->config = $config;
         $this->conversation = $conversation;
         $this->userId = check() ? check()->user()->id : null;
+        $this->recordings = new Recordings();
     }
 
     /**
@@ -174,6 +173,10 @@ class Chat
         $conversation = Conversation::firstOrCreate(['name' => $conversationName]);
         $this->addMembers($conversation->id, [$userId]);
         return $conversation;
+    }
+
+    public function recordings() {
+        return $this->recordings;
     }
 
 }

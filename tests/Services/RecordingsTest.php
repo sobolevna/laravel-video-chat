@@ -11,6 +11,7 @@ namespace Sobolevna\LaravelVideoChat\Tests\Services;
 use Sobolevna\LaravelVideoChat\Services\Recordings;
 use Sobolevna\LaravelVideoChat\Tests\TestCase;
 use Storage;
+use Chat;
 
 /**
  * Description of ChatTest
@@ -24,7 +25,6 @@ class RecordingsTest extends TestCase {
     public function setUp() : void 
     {
         parent::setUp(); 
-        $this->recordings = new Recordings;
 
         Storage::makeDirectory('video');
         Storage::put('video/1/1.mp4', '');
@@ -42,7 +42,7 @@ class RecordingsTest extends TestCase {
      * @covers ::recordings
      */
     public function testRecordings() {
-        $videos = $this->recordings->recordings(1);
+        $videos = Chat::recordings()->recordings(1);
         $this->assertTrue(count($videos) == 2);
     }
 }

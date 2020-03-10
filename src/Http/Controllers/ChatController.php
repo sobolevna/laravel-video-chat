@@ -10,13 +10,7 @@ use Storage;
 
 class ChatController extends Controller
 {
-    protected $recordings;
-
-    public function __construct() {
-        parent::__construct();
-        $this->recordings = new Recordings();
-    }
-
+    
     /**
      * Show the application dashboard.
      *
@@ -59,14 +53,14 @@ class ChatController extends Controller
     }
 
     public function recordings($id) {
-        return $this->recordings->recordings($id);
+        return Chat::recordings()->recordings($id);
     }
 
     public function preview($id) {
-        return $this->recordings->preview($id);
+        return Chat::recordings()->preview($id);
     }
 
     public function video($id) {
-        return $this->recordings->video($id);
+        return Chat::recordings()->video($id);
     }
 }
