@@ -5,7 +5,7 @@ export function OpenViduManager() {
     var session;
 	
     var manager = {
-        subscribers:[],
+        subscriber:null,
         publisher: null,
         joinSession(sessionId, data, callbacks) {
             return new Promise((resolve, reject) => {
@@ -13,22 +13,22 @@ export function OpenViduManager() {
                 session = OV.initSession();        
                 
                 session.on("streamCreated", (event)=> {
-                    var subscriber = session.subscribe(event.stream, "remoteVideo", {
+                    this.subscriber = session.subscribe(event.stream, "remoteVideo", {
                         insertMode: 'APPEND'
                     });
-                    subscriber.on('videoElementCreated', event => {
+                    this.subscriber.on('videoElementCreated', event => {
                         var videoElement = event.element;
-                        if (subscriber.videos.find(item=>item.id == videoElement.id)) {
-                            return;
-                        }
                         var remoteVideoContainer = videoElement.parentNode;
                         var wrapper = document.createElement('div');
                         wrapper.className='col embed-responsive embed-responsive-4by3';
+                        wrapper.id = videoElement.id + '__container'
                         remoteVideoContainer.removeChild(videoElement);
                         wrapper.appendChild(videoElement);
                         remoteVideoContainer.appendChild(wrapper);
-                    });
-                    this.subscribers.push(subscriber);
+                    });     
+                    this.subscriber.on('videoElementDestroyed', event => {
+                        document.getElementById(event.element.id + '__container').remove();
+                    })               
                 });
 
                 getToken(mySessionId).then(token => {
@@ -67,12 +67,7 @@ export function OpenViduManager() {
         },
         stopStreaming() {
             try {
-                session.unpublish(this.publisher);    
-                /*while (this.subscribers.length) {
-                    let subscriber = this.subscribers.pop();
-                    session.unsubscribe(subscriber);
-                }*/                    
-                
+                session.unpublish(this.publisher);              
             }
             catch(e) {
                 console.log(e);

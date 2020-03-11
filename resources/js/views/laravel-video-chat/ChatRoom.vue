@@ -17,12 +17,27 @@
                     <b-card-header>
                         <b-icon icon="chat"></b-icon> Сообщения 
 
-                        <button class="btn btn-primary btn-sm float-right" @click="startVideoCall()" type="button">
-                            <b-icon icon="camera-video-fill"></b-icon> Видеозвонок
-                        </button>
-                        <button class="btn btn-info btn-sm float-right" @click="showRecordings()" type="button">
-                            <b-icon-play></b-icon-play>Видеозаписи
-                        </button>
+                        <b-button 
+                            class="float-right" 
+                            variant="primary"
+                            size="sm"
+                            @click="startVideoCall()" 
+                            v-b-tooltip.hover title="Видеозвонок"
+                        >
+                            <b-icon icon="camera-video-fill"></b-icon> 
+                            <span class="d-none d-md-inline">Видеозвонок</span>
+                        </b-button>
+                        <b-button 
+                            class="float-right" 
+                            variant="info"
+                            size="sm"
+                            @click="showRecordings()" 
+                            v-b-tooltip.hover 
+                            title="Видеозаписи"
+                        >
+                            <b-icon-play></b-icon-play>
+                            <span class="d-none d-md-inline">Видеозаписи</span>
+                        </b-button>
                     </b-card-header>
                     <ul class="chat card-body" v-chat-scroll>
                         <li class="clearfix" v-for="message in messages" :key="message.id" v-bind:class="{ 'right' : check(message.sender.id), 'left' : !check(message.sender.id) }">
@@ -33,7 +48,7 @@
                                 <div class="header">
                                     <small class=" text-muted"><span class="fa fa-clock-o"></span><timeago :datetime="message.created_at" :auto-update="10"></timeago></small>
                                     <strong  class="primary-font">
-                                        {{ message.sender.name }}
+                                        {{ getSenderName(message.sender) }}
                                     </strong>
                                 </div>
                                 <p v-bind:class="setMessageClasses(message.sender.id)">
@@ -57,13 +72,20 @@
                                 @keyup.ctrl.enter="send()"
                             ></b-form-textarea>
                             <span class="input-group-btn">
-                                <button class="btn btn-primary btn-sm" type="button" @click.prevent="send()" id="btn-chat" v-if="!loadingChat">
+                                <b-button 
+                                    variant="info"
+                                    size="sm"
+                                    @click.prevent="send()"
+                                    v-b-tooltip.hover 
+                                    title="Отправить по Ctrl+Enter"
+                                    id="btn-chat" v-if="!loadingChat"
+                                >
                                     <b-icon icon="cursor"></b-icon> 
-                                    Отправить
-                                </button>
+                                    <span class="d-none d-md-inline">Отправить</span>
+                                </b-button>
                                 <button class="btn btn-primary btn-sm" type="button" disabled v-else>
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    Отправляется...
+                                    <span class="d-none d-md-inline">Отправляется...</span>
                                 </button>
                             </span>
                         </div>
@@ -72,7 +94,6 @@
                                 multiple 
                                 browse-text="Обзор"
                                 v-model="filesForUpload"
-                                :state="Boolean(filesForUpload.length)"
                                 placeholder="Выберите файлы..."
                                 drop-placeholder="Опустите файлы..."
                             ></b-form-file>
@@ -144,6 +165,12 @@
                     text,
                     created_at: new Date()
                 };
+                message.sender.profile = {
+                    avatar: this.currentUser.avatar,
+                    first_name:this.currentUser.first_name,
+                    middle_name:this.currentUser.middle_name,
+                    last_name:this.currentUser.last_name
+                }
                 if (this.filesForUpload && this.filesForUpload.length) {
                     this.sendFiles().then((response)=>{
                         message.files = response.data.files;
@@ -219,7 +246,7 @@
                 var message = {from: this.currentUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
                 this.openViduManager.sendSignal('close', JSON.stringify(message),()=>{
                     //axios.post('/trigger/'+this.conversationId, message);
-                });                
+                });               
             },
             handleCall() {
                 if (!this.showVideo) {
@@ -257,6 +284,9 @@
                 this.$router.push({
                     path: this.conversationId+'/recordings'
                 });                
+            },
+            getSenderName(sender) {
+                return `${sender.profile.first_name} ${sender.profile.middle_name || ''} ${sender.profile.last_name}`
             }
         },
         mounted() {
@@ -265,6 +295,10 @@
                     .then(()=>this.listenForNewMessage());
             });
             
+        },
+        beforeDestroy() {
+            console.log('beforeDestroy');
+            this.openViduManager.leaveSession();
         }
     }    
 
