@@ -23,7 +23,7 @@ class Recordings
             if (!Storage::exists("video/$videoId/$videoId.jpg")) {
                 continue;
             }
-            $video['id'] = $videoId;
+            $video = json_decode(Storage::get("video/$videoId/.recording.$videoId"), true);
             $video['img_preview'] = route('chat.preview', $videoId);
             $video['url'] = route('chat.video', $videoId);
             $videos[] = $video;

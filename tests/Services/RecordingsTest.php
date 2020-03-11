@@ -29,9 +29,12 @@ class RecordingsTest extends TestCase {
         Storage::makeDirectory('video');
         Storage::put('video/1/1.mp4', '');
         Storage::put('video/1/1.jpg', '');
+        Storage::put('video/1/.recording.1', json_encode(['id'=>'1']));
         Storage::put('video/1-1/1-1.mp4', '');
+        Storage::put('video/1-1/.recording.1-1', json_encode(['id'=>'1-1']));
         Storage::put('video/1-2/1-2.mp4', '');
         Storage::put('video/1-2/1-2.jpg', '');
+        Storage::put('video/1-2/.recording.1-2', json_encode(['id'=>'1-2']));
     }
 
     public function tearDown() :void {
