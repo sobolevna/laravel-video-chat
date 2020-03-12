@@ -44,7 +44,7 @@ class ConversationRepository extends BaseRepository
             }, 
             'users'
         ])->whereHas('users', function ($query) use ($user) {
-            $query->where('id', $user);
+            $query->where('users.id', $user);
         })->get();
 
         return $conversations;

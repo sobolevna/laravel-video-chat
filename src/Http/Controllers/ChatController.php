@@ -18,7 +18,7 @@ class ChatController extends Controller
      */
     public function index()
     {
-        return view('videochat.index');
+        return Chat::getAllConversations();
     }
     
     /**
