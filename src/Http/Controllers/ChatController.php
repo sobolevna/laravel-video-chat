@@ -22,8 +22,9 @@ class ChatController extends Controller
     }
     
     /**
-     * Show the application dashboard.
-     *
+     * Join existing conversation or start a new one
+     * 
+     * @param Request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -32,6 +33,13 @@ class ChatController extends Controller
         return ['conversationId'=>$conversation->id];
     }
 
+    /**
+     * Get conversation data
+     * 
+     * @param int $id Conversation id
+     * @param Request
+     * @return \Illuminate\Http\Response
+     */
     public function show($id, Request $request)
     {
         $conversation = Chat::getConversationMessageById($id);
@@ -41,25 +49,54 @@ class ChatController extends Controller
         ];
     }
 
+    /**
+     * Send a message
+     * 
+     * @param Request
+     * @return \Illuminate\Http\Response
+     */
     public function send(Request $request)
     {
         Chat::sendMessage($request->input('conversationId'), $request->input('text'));
     }
 
-
+    /**
+     * Prepare a file to be sent
+     * 
+     * @param Request
+     * @return \Illuminate\Http\Response
+     */
     public function sendFilesInConversation(Request $request)
     {
         return Chat::sendFiles($request->input('conversationId') , $request->file('files'));
     }
 
+    /**
+     * Get all video recordings of a conversation
+     * 
+     * @param int $id Conversation id
+     * @return \Illuminate\Http\Response
+     */
     public function recordings($id) {
         return Chat::recordings()->recordings($id);
     }
 
+    /**
+     * Get recording preview image 
+     * 
+     * @param int $id Recording id
+     * @return \Illuminate\Http\Response
+     */
     public function preview($id) {
         return Chat::recordings()->preview($id);
     }
 
+    /**
+     * Get recording video
+     * 
+     * @param int $id Recording id
+     * @return \Illuminate\Http\Response
+     */
     public function video($id) {
         return Chat::recordings()->video($id);
     }

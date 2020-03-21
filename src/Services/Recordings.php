@@ -8,8 +8,18 @@ use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
 use Sobolevna\LaravelVideoChat\Models\{Conversation};
 use Storage;
 
+/**
+ * @author sobolevna 
+ * 
+ */
 class Recordings
 {
+    /**
+     * Get all video recordings of a conversation
+     * 
+     * @param int $id Conversation id
+     * @return array
+     */
     public function recordings($sessionId) {
         $videos = [];
         $i = 0;
@@ -31,6 +41,12 @@ class Recordings
         return $videos;
     }
 
+    /**
+     * Get recording preview image 
+     * 
+     * @param int $id Recording id
+     * @return \Illuminate\Http\Response
+     */
     public function preview($videoId) {
         $fileContents = Storage::disk('local')->get("video/{$videoId}/$videoId.jpg");
         $response = Response::make($fileContents, 200);
@@ -38,6 +54,12 @@ class Recordings
         return $response;
     }
 
+    /**
+     * Get recording preview image 
+     * 
+     * @param int $id Recording id
+     * @return \Illuminate\Http\Response
+     */
     public function video($videoId) {
         $fileContents = Storage::disk('local')->get("video/{$videoId}/$videoId.mp4");
         $response = Response::make($fileContents, 200);
