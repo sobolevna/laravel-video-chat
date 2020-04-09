@@ -80,7 +80,7 @@ class ConversationRepository extends BaseRepository
      */
     public function getConversationMessageById($conversationId, $channel = null)
     {
-        $conversation = $this->query()->with(['messages', 'messages.sender', 'messages.sender.profile', 'messages.files', 'users', 'users', 'files'])->find($conversationId);
+        $conversation = $this->query()->with(['messages', 'messages.sender', 'messages.sender.profile', 'messages.files', 'users', 'users.profile', 'files'])->find($conversationId);
 
         $collection = (object) null;
         $collection->id = $conversationId;
