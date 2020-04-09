@@ -1,7 +1,8 @@
 <template>
-    
-        
-            <div class="video-container">
+    <div :class="'videosection card '">
+        <div class="card-body">
+            <!--<div class="video-container" :class="{full : fullscreen}">-->
+            <div class="video-container full">
                 <div class="row" id="remoteVideo" >
                     
                 </div>
@@ -10,79 +11,118 @@
                         Видео не поддерживается вашим браузером
                     </video>
                 </div>
-            </div>
-        
-        
+            </div>       
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-danger" @click="endCall">
+                <!--<fai icon="phone-slash"></fai>-->
+                Завершить
+            </button> 
+            <button class="btn btn-primary" @click="toggleFullScreen">
+                <b-icon icon="tv"></b-icon>
+                {{ fullscreenButton }}
+            </button> 
+            <button class="btn btn-primary" @click="toggleScreenShare">
+                <b-icon icon="desctop"></b-icon>
+                {{ screenShareButton }}
+            </button> 
+        </div>
+    </div>
 </template>
 
 <script>
     export default {
-        props: ['visible'],
         data() {
             return {
-                
+                fullscreen: false,
+                fullscreenButton: 'Полный экран',
+                screenShareButton: "Показ экрана",
+                screenShare: false
             }
         },
         methods: {
-            toggleFullScreen() {
-                let element = $('.videosection.visible')[0];
-                if (!document.fullscreenElement) {
-                    element.requestFullscreen();
-                    $('.video-container').toggleClass('video-fart-rem', true);
-                    $('.embed-responsive.embed-responsive-4by3').toggleClass('video-full', true);
-                    $('#remoteVideo').toggleClass('video-full', true);
-                    $('.embed-responsive embed-responsive-1by1 local-video-container').toggleClass('local-video-container', false);
-                    $('.embed-responsive embed-responsive-1by1 local-video-container').toggleClass('video-full-fart', true);
+            /**
+             * @fires Event#end-call
+             */
+            endCall(){
+                this.toggleFullScreen(false);
+                /**
+                 * @event Event#end-call
+                 * @type {object} 
+                 */
+                this.$emit('end-call');
+            },
+            /**
+             * @param {boolean} flag 
+             */
+            toggleFullScreen(flag) {
+                //Есть ли полный экран сейчас 
+                var state = !!document.fullscreenElement;
+                //Был ли задан флаг
+                var hasFlag = !(flag === undefined || flag === null);;
+                /*
+                    Если флага не было, то полный экран нужен при его отсутствии и не нужен при наличии 
+                    Если флаг был, то полный экран нужен, когда флаг положительный и полного экрана нет
+                */
+                /**
+                 * @todo Исправить логику так, чтобы в консоль не шла ошибка "not in fullscreen mode"
+                 */
+                var doFullScreen = !hasFlag ? !state : (flag && !state);
+                if (doFullScreen) {
+                    document.querySelector('.chat-room .videosection').requestFullscreen();
+                }
+                else if (!state && hasFlag && !flag) {
+                    return;
                 }
                 else {
-                    document.exitFullscreen();
-
+                    document.exitFullscreen();                
                 }
-            }, 
-            finish() {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                    $('.video-container').toggleClass('video-fart-rem', false);
-                    $('.embed-responsive.embed-responsive-4by3').toggleClass('video-full', false);
-                    $('#remoteVideo').toggleClass('video-full', false);
-                    $('.embed-responsive embed-responsive-1by1 local-video-container').toggleClass('local-video-container', true);
-                    $('.embed-responsive embed-responsive-1by1 local-video-container').toggleClass('video-full-fart', false);
-                }
-                this.$emit('endCall');
+            },
+            /**
+             * @fires Event#toggle-screen-share
+             */
+            toggleScreenShare() {
+                this.screenShare = !this.screenShare;
+                this.screenShareButton = this.screenShare ? 'Остановить показ' : 'Демонстрация экрана';
+                /**
+                 * @event Event#toggle-screen-share
+                 * @type {object} 
+                 * @property {boolean} flag 
+                 */
+                this.$emit('toggle-screen-share', this.screenShare);
+            },
+        },
+        mounted() {
+            document.querySelector('.chat-room .videosection').onfullscreenchange = ()=> {
+                console.log('Fullscreen:', this.fullscreen)
+                this.fullscreen = !this.fullscreen;
+                this.fullscreenButton = this.fullscreen ? 'Обычный режим' : 'Полный экран';   
             }
         }
     }
 </script>
 
-<style>
-    .video-container {
+<style lang="scss">
+
+    .video-container{
         position: relative;
     }
+
+    .video-container.full{
+        &, #remoteVideo {
+            height: 100%;
+        }
+    }
+
+    #remoteVideo .embed-responsive.embed-responsive-4by3 {
+        max-height: 100%;
+    }
+
     .local-video-container {
         width: 20%;
         height: 20%;
-    }
-    .embed-responsive.embed-responsive-1by1.local-video-container {
         position: absolute;
         bottom: 20px;
         right: 5px;
-    }
-    .card-body {
-        /*overflow-x: hidden;
-        max-height: max-content;
-        height: 90%;*/
-    }
-    .video-fart{
-        height: 40%;
-    }
-    .video-fart-rem{
-        height: 100%;
-    }
-    .video-full-fart{
-        top: 200px;
-        height: 100%;
-    }
-    .video-full{
-        height: 100%;
     }
 </style>

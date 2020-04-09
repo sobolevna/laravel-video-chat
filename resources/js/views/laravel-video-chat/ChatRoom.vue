@@ -1,111 +1,70 @@
 <template>
     <div>
-        <div class="row chat-room">            
-            <div class="col-md-6" v-show="showVideo">
-                <div :class="'videosection card '">
-                    <div class="card-body h-auto">
-                        <video-section :visible="showVideo" @endCall="endCall()"></video-section>
-                    </div>
-                    <div class="card-footer">
-                        <button class="btn btn-danger" @click="endCall()">Завершить</button> 
-                        <!--<button class="btn btn-primary" @click="">Полный экран</button> -->
-                    </div>
-                </div>
-            </div>
-            <div :class="showVideo ? 'col-md-6' : 'col-md-12'">
-                <b-card no-body bg-variant="lite">
-                    <b-card-header>
-                        <b-icon icon="chat"></b-icon> Сообщения 
-
-                        <b-button 
-                            class="float-right" 
+        <b-navbar>      
+            <b-navbar-nav>
+                <b-nav-item>
+                    {{ conversation ? ' Беседа: '+conversation.name : '' }}
+                </b-nav-item>
+            </b-navbar-nav>
+            <b-navbar-nav class="ml-auto">      
+                <b-nav-item right>
+                    <b-button-toolbar
+                        class="float-right" 
+                    >
+                        <button-responsive                 
+                            variant="info"
+                            size="sm"
+                            :to="`/chat/${conversationId}/recordings`"
+                            v-b-tooltip.hover 
+                            title="Видеозаписи"
+                            icon="play"
+                        >                            
+                        </button-responsive>
+                        <b-button-group>
+                            <button-responsive 
                             variant="primary"
                             size="sm"
                             @click="startVideoCall()" 
-                            v-b-tooltip.hover title="Видеозвонок"
-                        >
-                            <b-icon icon="camera-video-fill"></b-icon> 
-                            <span class="d-none d-md-inline">Видеозвонок</span>
-                        </b-button>
-                        <b-button 
-                            class="float-right" 
-                            variant="info"
-                            size="sm"
-                            @click="showRecordings()" 
                             v-b-tooltip.hover 
-                            title="Видеозаписи"
+                            title="Видеозвонок"
+                            icon="camera-video-fill"
                         >
-                            <b-icon-play></b-icon-play>
-                            <span class="d-none d-md-inline">Видеозаписи</span>
-                        </b-button>
-                    </b-card-header>
-                    <ul class="chat card-body" v-chat-scroll>
-                        <li class="clearfix" v-for="message in messages" :key="message.id" v-bind:class="{ 'right' : check(message.sender.id), 'left' : !check(message.sender.id) }">
-                            <span class="chat-img" v-bind:class="setMessageClasses(message.sender.id)">
-                                <img :src="getSenderAvatar(message)" alt="User Avatar" class="img-circle" />
-                            </span>
-                            <div class="chat-body clearfix" v-bind:class="setMessageClasses(message.sender.id)">
-                                <div class="header">
-                                    <small class=" text-muted"><span class="fa fa-clock-o"></span><timeago :datetime="message.created_at" :auto-update="10"></timeago></small>
-                                    <strong  class="primary-font">
-                                        {{ getSenderName(message.sender) }}
-                                    </strong>
-                                </div>
-                                <p v-bind:class="setMessageClasses(message.sender.id)">
-                                    {{ message.text }}
-                                </p>
-                                <div class="clearfix"></div>
-                                <div class="row">
-                                    <file-preview :file="file" v-for="file in message.files" :key="file.id"></file-preview>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                    <b-card-footer>
-                        <div class="input-group">
-                            <b-form-textarea
-                                id="textarea"
-                                v-model="text"
-                                placeholder="Введите текст..."
-                                rows="1"
-                                max-rows="6"
-                                @keyup.ctrl.enter="send()"
-                            ></b-form-textarea>
-                            <span class="input-group-btn">
-                                <b-button 
-                                    variant="info"
-                                    size="sm"
-                                    @click.prevent="send()"
-                                    v-b-tooltip.hover 
-                                    title="Отправить по Ctrl+Enter"
-                                    id="btn-chat" v-if="!loadingChat"
-                                >
-                                    <b-icon icon="cursor"></b-icon> 
-                                    <span class="d-none d-md-inline">Отправить</span>
-                                </b-button>
-                                <button class="btn btn-primary btn-sm" type="button" disabled v-else>
-                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span class="d-none d-md-inline">Отправляется...</span>
-                                </button>
-                            </span>
-                        </div>
-                        <div class="form-group">
-                            <b-form-file 
-                                multiple 
-                                browse-text="Обзор"
-                                v-model="filesForUpload"
-                                placeholder="Выберите файлы..."
-                                drop-placeholder="Опустите файлы..."
-                            ></b-form-file>
-                        </div>
-                    </b-card-footer>
-                </b-card>
+                        </button-responsive>
+                        </b-button-group>
+                    </b-button-toolbar>
+                </b-nav-item>     
+            </b-navbar-nav>
+        </b-navbar>        
+        <div class="row chat-room vh-75">            
+            <div class="chat-component col-md-6 h-100" v-show="showVideo">
+                <video-section 
+                    class="h-100"
+                    @end-call="endCall" 
+                    @toggle-screen-share="toggleScreenShare"
+                ></video-section>
+            </div>
+            <div :class="'chat-component h-100 '+ (showVideo ? 'col-md-6' : 'col-md-12')">
+                <chat-section 
+                    class="h-100"
+                    :loading-chat="loadingChat" 
+                    :current-user="currentUser" 
+                    :send-message="sendMessage"
+                ></chat-section>
             </div>
             
-            <b-modal id="incomingVideoCallModal" title="Входящий вызов" v-model="incomingVideoCallModalShow">
+            <b-modal 
+                id="incomingVideoCallModal" 
+                title="Входящий вызов" 
+                v-model="incomingVideoCallModalShow" 
+                @close="declineCall"
+                @cancel="declineCall"
+                @shown="audioManager.callAudio('ringtone', true)"
+                @hidden="audioManager.callAudio('ringtone', false)"
+                no-close-on-backdrop
+            >
                 <template slot="modal-footer">
                     <button type="button" id="answerCallButton" class="btn btn-success" @click="answer()">Ответить</button>
-                    <button type="button" id="denyCallButton" data-dismiss="modal" class="btn btn-danger">Отклонить</button>
+                    <button type="button" id="denyCallButton" data-dismiss="modal" @click="declineCall()" class="btn btn-danger">Отклонить</button>
                 </template>
             </b-modal>
             
@@ -121,107 +80,111 @@
     
     import VideoSection from "../../components/laravel-video-chat/VideoSection";
     import FilePreview from "../../components/laravel-video-chat/FilePreview";
+    import ButtonResponsive from "../../components/laravel-video-chat/ButtonResponsive";
+    import ChatSection from "../../components/laravel-video-chat/ChatSection";
+    import AudioManager from "../../services/audio";
+    import NotificationManager from "../../services/notification";
 
     export default {
         components: {
             VideoSection,
-            FilePreview
+            FilePreview,
+            ButtonResponsive,
+            ChatSection
         },
         props: ['conversationId'],
         data() {
             return {
                 filesForUpload: [],
-                conversation: null,
+                conversation: this.$store.state.videochat.currentConversation,
                 channel: '',
-                messages: [],
-                withUsers: [],
-                text: '',
+                withUsers: [],                
                 showVideo: false,
                 openViduManager: new OpenViduManager,
-                loadingChat: false,
+                audioManager: new AudioManager([
+                    { 
+                        name: 'message',
+                        file: '/sounds/234524__foolboymedia__notification-up-1.wav',
+                    },
+                    { 
+                        name: 'ringtone',
+                        file: '/sounds/271152__chriswr__legacy-ringtone.mp3',
+                        hasLoop: true
+                    },
+                    { 
+                        name: 'calling',
+                        file: '/sounds/271980__l3v1stus__phone-call.wav',
+                        hasLoop: true
+                    },
+                ]),
+                notificationManager: new NotificationManager(),
                 incomingVideoCallModalShow: false,
                 currentUser: this.$store.state.auth.user,
-                conversationFiles: []
+                conversationFiles: [],
+                loadingChat: false,
+                recordingId: ''
             }
         },
         methods: {
-            startVideoCall() {
-                let self = this;
-                this.openViduManager.startStreaming().then(()=>{
-                    self.showVideo = true;
-                    var message = {from: this.currentUser.id, type: 'signal', subtype: 'offer', content: '', time: new Date()};
-                    self.openViduManager.sendSignal('offer', JSON.stringify(message));
-                }, (e)=>console.log(e));
-            },
-            check(id) {
-                return id === this.currentUser.id;
-            },
-            send() {
-                this.toggleLoadingChat(true);
-                var text = this.text;
-                var message = {
-                    conversationId: this.conversationId,
-                    sender: this.currentUser,
-                    text,
-                    created_at: new Date()
-                };
-                message.sender.profile = {
-                    avatar: this.currentUser.avatar,
-                    first_name:this.currentUser.first_name,
-                    middle_name:this.currentUser.middle_name,
-                    last_name:this.currentUser.last_name
+            async startVideoCall() {
+                var loader = this.$loading.show();
+                this.audioManager.callAudio('ringtone', false);
+                try {
+                    if (!this.recordingId) {
+                        let response = await axios.post(`/openvidu/recordings/start`, {
+                            session: this.conversationId,
+                            name: ''
+                        });
+                        this.recordingId = response.data.recording.id;  
+                    }                
+                    await this.openViduManager.startStreaming();
+                    this.showVideo = true;
+                    var message = {from: this.currentUser.id, recordingId: this.recordingId, type: 'signal', subtype: 'offer', content: '', time: new Date()};
+                    this.openViduManager.sendSignal('offer', JSON.stringify(message));
                 }
-                if (this.filesForUpload && this.filesForUpload.length) {
-                    this.sendFiles().then((response)=>{
-                        message.files = response.data.files;
-                        message.text = !message.text ? response.data.text: message.text;
-                        this.sendMessage(message);
-                        this.filesForUpload = []
-                    }, (response)=>{
-                        alert('Произошла ошибка при отправке файлов');
-                        this.toggleLoadingChat(false);
-                    });
+                catch(e) {
+                    alert("При подключении произошла ошибка");
+                    console.log(e);
                 }
-                else {
-                    this.sendMessage(message);
-                }                
-            },
+                loader.hide();
+            },            
+            /**
+             * @param {object} message
+             */
             sendMessage(message) {
                 this.openViduManager.sendSignal('message', JSON.stringify(message), ()=>{
                     this.text = '';
                     axios.post('/api/chat/message/send', message);
-                    this.toggleLoadingChat(false);
+                    this.loadingChat = false;
                 });
             },
-            async sendFiles() {
-                var data = new FormData();
-
-                $.each(this.filesForUpload, function (key, value)
-                {
-                    data.append('files[]', value);
-                });
-
-                data.append('conversationId', this.conversationId);
-
-                return axios.post('/api/chat/message/send/file', data);
-            },        
-            toggleLoadingChat(flag) {
-                this.loadingChat = !!flag;
-            },
-            listenForNewMessage: function () {
+            listenForNewMessage() {
                 this.openViduManager.listenForSignal('message',(event)=>{
-                    var data = JSON.parse(event.data);
-                    if (data.files && data.files.length > 0) {
-                        data.files.forEach((item) =>{
+                    var message = event.data;
+                    if (message.files && message.files.length > 0) {
+                        message.files.forEach((item) =>{
                             this.conversation.files.push(item);
                         });
                     }
-                    this.messages.push(data);
+                    this.conversation.messages.push(message);
+                    if (event.data.sender.id != this.currentUser.id) {
+                        this.audioManager.callAudio('message');
+                        let sender = `${message.sender.profile.first_name} ${message.sender.profile.middle_name || ''} ${message.sender.profile.last_name}`;
+                        this.notificationManager.send(sender, {
+                            body: message.text,
+                            img: message.sender.avatar
+                        });
+                    } 
                 });
-                this.openViduManager.listenForSignal('offer',()=>{
-                    this.handleCall();
+                this.openViduManager.listenForSignal('offer',(event)=>{
+                    let sameUser = event.data.from == this.currentUser.id;
+                    this.recordingId = event.data.recordingId;
+                    this.handleCall(sameUser);
                 });
                 this.openViduManager.listenForSignal('close',()=>{
+                    if (event.data.from == this.currentUser.id) {
+                        return;
+                    }
                     this.endCall(true);
                 });
             },
@@ -229,50 +192,61 @@
                 this.showVideo = false;
             },
             answer() {
-                var self = this;
+                this.audioManager.callAudio('ringtone', false);
                 this.incomingVideoCallModalShow = false;
-                self.showVideo = true;  
+                if (this.showVideo) {
+                    return;
+                }
+                this.showVideo = true;  
                 this.openViduManager.startStreaming().then(()=>{
-                    var message = {from: self.currentUser.id, type: 'signal', subtype: 'answer', content: '', time: new Date()};
-                    //return axios.post('/trigger/' + self.conversationId, message);
+                    var message = {from: this.currentUser.id, type: 'signal', subtype: 'answer', content: '', time: new Date()};
+                    //return axios.post('/trigger/' + this.conversationId, message);
                 });
             },
+            /**
+             * @param {boolean} fromSignal
+             */
             endCall(fromSignal) {
                 this.showVideo = false;
                 this.openViduManager.stopStreaming();
-                if (fromSignal) {
-                    return;
+                if (!fromSignal) {
+                    var message = {from: this.currentUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
+                    this.openViduManager.sendSignal('close', JSON.stringify(message),()=>{
+                        axios.post(`/openvidu/recordings/${this.recordingId}/stop`);
+                    });  
                 }
-                var message = {from: this.currentUser.id, type: 'signal', subtype: 'close', content: '', time: new Date()};
-                this.openViduManager.sendSignal('close', JSON.stringify(message),()=>{
-                    //axios.post('/trigger/'+this.conversationId, message);
-                });               
+                /*this.openViduManager.leaveSession();
+                this.openViduManager.joinSession(this.conversationId);*/
             },
-            handleCall() {
-                if (!this.showVideo) {
+            handleCall(sameUser) {
+                this.notificationManager.send("Беседа: "+ this.conversation.name, {
+                    body: "Видеозвонок"
+                });
+                if (!this.showVideo && !sameUser) {
                     this.incomingVideoCallModalShow = true;
                 }
+                else if(!this.showVideo && sameUser) {
+                    this.showVideo = true;
+                }
+            },  
+            declineCall() {
+                this.audioManager.callAudio('ringtone', false);
+                this.incomingVideoCallModalShow = false;
+                if (this.showVideo) {
+                    return;
+                }
+                var message = {from: this.currentUser.id, type: 'signal', subtype: 'decline', content: '', time: new Date()};
+                this.openViduManager.sendSignal('close', JSON.stringify(message),()=>{
+                    //axios.post(`/openvidu/recordings/${this.recordingId}/stop`);
+                });  
             },
-            setMessageClasses(senderId) {
-                var obj = { 
-                    'float-right': this.check(senderId), 
-                    'text-right': this.check(senderId), 
-                    'float-left' : !this.check(senderId),
-                    'text-left' : !this.check(senderId),
-                };
-                return obj;
-            },
-            prepareUpload(event) {
-                this.filesForUpload = event.target.files;
-            },
-            getSenderAvatar(message) {
-                return message.sender.avatar || 'https://placehold.it/50/FA6F57/fff&text='+ message.sender.name;
-            },
+            /**
+             * @param {number} conversationId
+             */
             async getConversationDetails(conversationId) {
                 axios.get(`/api/chat/${conversationId}`).then((response) =>{
                     this.conversation = response.data.conversation; 
                     this.conversationFiles = response.data.conversation.files
-                    this.messages = response.data.conversation.messages;
                     this.withUsers = response.data.conversation.users;
                     this.channel = response.data.conversation.channel;
                 }, (response)=>{
@@ -282,18 +256,34 @@
             },
             showRecordings() {
                 this.$router.push({
-                    path: this.conversationId+'/recordings'
+                    path: 'recordings'
                 });                
             },
-            getSenderName(sender) {
-                return `${sender.profile.first_name} ${sender.profile.middle_name || ''} ${sender.profile.last_name}`
-            }
+            /**
+             * @param {boolean} doScreenShare
+             */
+            toggleScreenShare(doScreenShare) {
+                if (doScreenShare) {
+                    this.openViduManager.screenShareStart();
+                }
+                else {
+                    this.openViduManager.screenShareStop();
+                }
+            },
+
+        },
+        computed: {
+
+        },
+        created(){
+            this.openViduManager.joinSession(this.conversationId)
+                    .then(()=>this.listenForNewMessage());
+            this.$store.dispatch('videochat/toConversation', this.conversationId).then((conversation)=>{
+                this.conversation = conversation;                 
+            });
+            this.notificationManager.requestPermissions();
         },
         mounted() {
-            this.getConversationDetails(this.conversationId).then(()=>{
-                this.openViduManager.joinSession(this.conversationId)
-                    .then(()=>this.listenForNewMessage());
-            });
             
         },
         beforeDestroy() {
@@ -304,35 +294,22 @@
 
 </script>
 
-<style scoped lang="scss">
-    .chat {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        
-        li {
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px dotted #B3A9A9;
-            
-            .chat-body p {
-                margin: 0;
-                color: #777777;
-            }
-        }
-    }
+<style scoped lang="scss">    
 
     .chat-room {
+
+        height: 75vh;
+
         .card .slidedown .glyphicon, .chat .glyphicon
         {
             margin-right: 5px;
         }
 
-        .card-body
+        /*.chat-component
         {
-            overflow-y: scroll;
-            height: 250px;
-        }
+            min-height: 250px;
+            max-height: 80vw;
+        }*/
     }
     
     ::-webkit-scrollbar-track

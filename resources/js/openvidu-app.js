@@ -7,6 +7,7 @@ export function OpenViduManager() {
     var manager = {
         subscriber:null,
         publisher: null,
+        screenPublisher: null,
         joinSession(sessionId, data, callbacks) {
             return new Promise((resolve, reject) => {
                 var mySessionId = sessionId || document.getElementById("sessionId").value;
@@ -67,7 +68,12 @@ export function OpenViduManager() {
         },
         stopStreaming() {
             try {
-                session.unpublish(this.publisher);              
+                if (this.publisher) {
+                    session.unpublish(this.publisher); 
+                }
+                if (this.screenPublisher) {
+                    session.unpublish(this.screenPublisher); 
+                }
             }
             catch(e) {
                 console.log(e);
@@ -92,10 +98,33 @@ export function OpenViduManager() {
         listenForSignal(signalType, callback) {
             var type = signalType || 'message';
             session.on('signal:'+type, (event)=>{
+                event.data = JSON.parse(event.data);
                 if (callback && typeof(callback) == 'function' ) {
                     callback(event);
                 }  
             });
+        },
+        screenShareStart() {
+            if (!this.screenPublisher) {
+                this.screenPublisher = OV.initPublisher(undefined, {
+                    audioSource: undefined, // The source of audio. If undefined default microphone
+                    videoSource: 'screen', // The source of video. If undefined default webcam
+                    publishAudio: true,  	// Whether you want to start publishing with your audio unmuted or not
+                    publishVideo: true,  	// Whether you want to start publishing with your video enabled or not
+                    resolution: '640x480',  // The resolution of your video
+                    frameRate: 60,			// The frame rate of your video
+                    insertMode: 'APPEND',	// How the video is inserted in the target element 'video-container'
+                    mirror: false       	// Whether to mirror your local video or not
+                });
+            }            
+            session.unpublish(this.publisher); 
+            this.screenPublisher.addVideoElement(document.getElementById('localVideo'));
+            session.publish(this.screenPublisher);            
+        },
+        screenShareStop() {
+            session.unpublish(this.screenPublisher); 
+            this.publisher.addVideoElement(document.getElementById('localVideo'));
+            session.publish(this.publisher);            
         }
     };
     
@@ -140,7 +169,7 @@ async function createSessionAndToken(sessionId) {
             body: JSON.stringify({
                 session: {
                     mediaMode: 'ROUTED',
-                    recordingMode: 'ALWAYS',
+                    recordingMode: 'MANUAL',
                     customSessionId: sessionId,
                     defaultOutputMode: 'COMPOSED',
                     defaultRecordingLayout: 'BEST_FIT'
