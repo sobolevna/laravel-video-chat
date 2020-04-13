@@ -11,11 +11,18 @@ Route::group([
     Route::get('/', 'ChatController@index')->name('index');
     Route::post('/', 'ChatController@store')->name('store');
     Route::get('/{id}', 'ChatController@show')->name('show');    
-    Route::post('/message/send', 'ChatController@send')->name('send');
-    Route::post('/message/send/file', 'ChatController@sendFilesInConversation')->name('send.file');
-    Route::post('/trigger/{id}' , function (\Illuminate\Http\Request $request , $id) {
-        Chat::startVideoCall($id , $request->all());
-    })->name('call');
+    
+    Route::group([
+        'prefix'=> 'message',
+        'as' => 'message.'
+    ], function(){
+        Route::post('/send', 'MessageController@send')->name('send');
+        Route::post('/send/file', 'MessageController@sendFilesInConversation')->name('send.file');
+    });
+
+    Route::post('/{id}/call/start' , 'CallController@start')->name('call.start');
+    Route::post('/{id}/call/finish' , 'CallController@finish')->name('call.finish');
+
     Route::post('/leave/{id}' , function ($id) {
         Chat::leaveFromGroupConversation($id);
     });

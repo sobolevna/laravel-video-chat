@@ -50,28 +50,6 @@ class ChatController extends Controller
     }
 
     /**
-     * Send a message
-     * 
-     * @param Request
-     * @return \Illuminate\Http\Response
-     */
-    public function send(Request $request)
-    {
-        Chat::sendMessage($request->input('conversationId'), $request->input('text'));
-    }
-
-    /**
-     * Prepare a file to be sent
-     * 
-     * @param Request
-     * @return \Illuminate\Http\Response
-     */
-    public function sendFilesInConversation(Request $request)
-    {
-        return Chat::sendFiles($request->input('conversationId') , $request->file('files'));
-    }
-
-    /**
      * Get all video recordings of a conversation
      * 
      * @param int $id Conversation id
