@@ -5,6 +5,9 @@ namespace Sobolevna\LaravelVideoChat\Http\Controllers;
 use Illuminate\Http\Request;
 use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Services\Recordings;
+use Sobolevna\LaravelVideoChat\Events\{
+    VideoChatStart, VideoChatFinish
+};
 use Illuminate\Routing\Controller;
 use SquareetLabs\LaravelOpenVidu\OpenVidu;
 use SquareetLabs\LaravelOpenVidu\Builders\RecordingPropertiesBuilder;
