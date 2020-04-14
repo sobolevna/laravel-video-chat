@@ -10,6 +10,7 @@ use Sobolevna\LaravelVideoChat\Events\{
 };
 use Illuminate\Routing\Controller;
 use SquareetLabs\LaravelOpenVidu\OpenVidu;
+use SquareetLabs\LaravelOpenVidu\Exceptions\OpenViduRecordingNotFoundException;
 use SquareetLabs\LaravelOpenVidu\Builders\RecordingPropertiesBuilder;
 use Storage;
 
@@ -30,14 +31,16 @@ class CallController extends Controller
     public function start($id, Request $request, Openvidu $manager) {
         $session = $manager->getSession($id);
         \broadcast(new VideoChatStart($request->all(), ''));
-        if (!$session->getLastRecordingId()) {
+        if (!$session->isBeingRecorded()) {
             $recording = $manager->startRecording(RecordingPropertiesBuilder::build($request->all()));
             return response()->json(['recording' => $recording], 200);
         }
+        return response()->json(["message' => 'Call started with session already being recorded"], 200);
     }
 
     /**
      * @todo События сделать как положено
+     * @todo Текущие соединения должны прописываться в кэше сессии
      * @param int $id 
      * @param Request $request
      * @param Openvidu $manager
@@ -46,11 +49,19 @@ class CallController extends Controller
     public function finish($id, Request $request, Openvidu $manager) {
         $session = $manager->getSession($id);
         $lastRecordingId = $session->getLastRecordingId();
-        $connections = $session->getActiveConnections();
+        $connectionsCount = intval($request->get('connectionsCount'));
         \broadcast(new VideoChatFinish($request->all(), ''));
-        if ($lastRecordingId && count($connections)<3) {
+        if (!($lastRecordingId && $connectionsCount<1)) {
+            return response()->json(["message" => "Call finished, but there are still connections ($connectionsCount in total)"], 200);
+        }        
+        try {
             $recording = $manager->stopRecording($lastRecordingId);
-            return response()->json(['recording' => $recording], 200);
         }
+        catch(OpenViduRecordingNotFoundException $e) {
+            $activeSession->setIsBeingRecorded(false);
+            $session->setLastRecordingId(null);
+            return response()->json(['message'=>'Recording not found and thus unset'], 404);
+        }            
+        return response()->json(['recording' => $recording, 'message'=>'Recording successfully stopped'], 200);
     }
 }
