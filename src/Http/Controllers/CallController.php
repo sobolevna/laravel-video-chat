@@ -58,7 +58,7 @@ class CallController extends Controller
             $recording = $manager->stopRecording($lastRecordingId);
         }
         catch(OpenViduRecordingNotFoundException $e) {
-            $activeSession->setIsBeingRecorded(false);
+            $session->setIsBeingRecorded(false);
             $session->setLastRecordingId(null);
             return response()->json(['message'=>'Recording not found and thus unset'], 404);
         }            
