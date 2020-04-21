@@ -12,44 +12,6 @@ class ChatController extends Controller
 {
     
     /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        return Chat::getAllConversations();
-    }
-    
-    /**
-     * Join existing conversation or start a new one
-     * 
-     * @param Request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $conversation = Chat::addParticipant($request->get('conversation'), auth()->user()->id);
-        return ['conversationId'=>$conversation->id];
-    }
-
-    /**
-     * Get conversation data
-     * 
-     * @param int $id Conversation id
-     * @param Request
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id, Request $request)
-    {
-        $conversation = Chat::getConversationMessageById($id);
-
-        return [
-            'conversation' => $conversation
-        ];
-    }
-
-    /**
      * Get all video recordings of a conversation
      * 
      * @param int $id Conversation id

@@ -11,6 +11,12 @@ Route::group([
     Route::get('/', 'ChatController@index')->name('index');
     Route::post('/', 'ChatController@store')->name('store');
     Route::get('/{id}', 'ChatController@show')->name('show');    
+    Route::apiResource([
+        'conversations'=> 'ConversationController',
+        'conversations.participants' => 'ParticipantController',
+        'conversations.messages' => 'MessageController',
+        'conversations.files' => 'FileController',
+    ]);
     
     Route::group([
         'prefix'=> 'message',
