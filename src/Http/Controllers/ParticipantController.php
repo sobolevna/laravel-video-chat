@@ -20,11 +20,13 @@ use Sobolevna\LaravelVideoChat\Models\Conversation;
 class ParticipantController extends Controller
 {
     /**
+     * @todo оптимизировать запрос
      * @param int $conversation 
      * @return Response
      */
     public function index($conversation) {
-        return Conversation::with('users', 'users.profile')->findOrFail($conversation)->users;
+        $data = Conversation::with('users', 'users.profile')->findOrFail($conversation)->users;
+        return ['success'=>true, 'participants'=>$data];
     }
 
     /**
@@ -43,12 +45,12 @@ class ParticipantController extends Controller
             ];
         }
         if (!empty($users)) {
-            $conversationModel->attach($users);
+            $conversationModel->users()->attach($users);
             $conversationModel->save();
         }
-        return [
+        return response()->json([
             'success' => true,
-        ];
+        ], 201);
     }
 
     /**
@@ -59,13 +61,16 @@ class ParticipantController extends Controller
      */
     public function destroy($conversation, $participant) {
         $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
+        /**
+         * @todo придумать, что делать с правами
+         */
+        if (auth()->user()->id != $participant) {
+            return response()->json([
                 'success' => false,
-                'message' => 'У вас нет прав добавлять участников в беседу'
-            ];
+                'message' => 'У вас нет прав удалять участников из беседы. Вы можете удалить только себя'
+            ], 403);
         }
-        $conversationModel->detach($participant);
+        $conversationModel->users()->detach($participant);
         return [
             'success' => true,
         ];

@@ -9,6 +9,7 @@
 namespace Sobolevna\LaravelVideoChat\Tests;
 
 use Sobolevna\LaravelVideoChat\Services\Chat;
+use Illuminate\Support\Facades\Route;
 
 class LaravelVideoChatServiceProviderTest extends TestCase
 {
@@ -27,5 +28,12 @@ class LaravelVideoChatServiceProviderTest extends TestCase
             $this->assertTrue(\Schema::hasTable($table));
         }
         
+    }
+
+    public function testRoutes() {
+        $this->assertTrue(Route::has('api.chat.conversations.index'));
+        $this->assertTrue(Route::has('api.chat.conversations.participants.index'));
+        $this->assertTrue(Route::has('api.chat.conversations.messages.index'));
+        $this->assertTrue(Route::has('api.chat.conversations.files.index'));
     }
 }

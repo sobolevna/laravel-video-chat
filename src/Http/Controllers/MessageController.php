@@ -46,22 +46,25 @@ class MessageController extends Controller
     {
         $conversationModel = Conversation::findOrFail($conversation);
         if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
+            return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
-            ];
+            ], 403);
         }
-        $message = Message::create([
-            'conversation_id'=>$conversation, 
+        $message = $conversationModel->messages()->create([
             'user_id'=>auth()->user()->id,
             'text'=>$request->get('text'),
         ]);
-        $message->attach($request->get('files'));
-        $message->save();
-        return [
+
+        $files = $request->get('files', null);
+        if ($files) {
+            $message->files()->attach($files);
+        }
+        
+        return response()->json([
             'success' => true,
             'message' => "Сообщение отправлено"
-        ];
+        ], 201);
     }
 
     /**

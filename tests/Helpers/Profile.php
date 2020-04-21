@@ -13,15 +13,12 @@ namespace Sobolevna\LaravelVideoChat\Tests\Helpers;
  *
  * @author sobolevna
  */
-class User extends \Illuminate\Foundation\Auth\User{
+class Profile extends \Illuminate\Database\Eloquent\Model{
+
+    protected $table = 'profile';
     
     protected $fillable = [
-        'name', 
-        'email',
-        'password'
+        'name',         
     ];
 
-    public function profile() {
-        return $this->hasOne(Profile::class);
-    }
 }

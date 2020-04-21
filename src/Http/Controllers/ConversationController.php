@@ -23,7 +23,7 @@ class ConversationController extends Controller
      * Список всех бесед, доступных пользователю
      */
     public function index() {
-        return Chat::getAllConversations();
+        return response()->json(['success'=>true, 'conversations'=> Chat::getAllConversations()], 200);
     }
 
     /**
@@ -34,8 +34,8 @@ class ConversationController extends Controller
      */
     public function store(Request $request)
     {
-        $conversation = Chat::addParticipant($request->get('conversation'), auth()->user()->id);
-        return ['conversationId'=>$conversation->id];
+        $conversation = Chat::addParticipant($request->get('name'), auth()->user()->id);
+        return response()->json(['success'=>true, 'conversationId'=>$conversation->id], 201);
     }
 
     /**
@@ -47,7 +47,12 @@ class ConversationController extends Controller
      */
     public function show($conversation, Request $request)
     {
-        $conversationModel = Chat::getConversationMessageById($conversation);
+        try {
+            $conversationModel = Chat::getConversationMessageById($conversation);
+        }
+        catch (\ErrorException $e) {
+            return $e->getMessage();
+        }
 
         return [
             'conversation' => $conversationModel
@@ -62,12 +67,16 @@ class ConversationController extends Controller
      */
     public function destroy($conversation) {
         $conversationModel = Conversation::with('users')->findOrFail($conversation);
-        if ($conversationModel->users->empty()) {
+        if ($conversationModel->users->isEmpty()) {
             $conversationModel->delete();
+            return [
+                'conversation' => $conversation,
+                'success' => true
+            ];
         }        
-        return [
-            'conversation' => $conversation,
-            'deleted' => true
-        ];
+        return response()->json([
+            'message'=>'Нельзя удалить беседу, если там кто-то есть',
+            'success' => false
+        ], 403);
     }
 }
