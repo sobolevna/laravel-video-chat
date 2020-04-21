@@ -78,17 +78,17 @@ class MessageController extends Controller
     public function update($conversation, $message, Request $request) {
         $conversationModel = Conversation::findOrFail($conversation);
         if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
+            return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
-            ];
+            ], 403);
         }
         $messageModel = Message::findOrFail($message);
         if ($messageModel->user_id != auth()->user()->id) {
-            return [
+            return response()->json([
                 'success' => false,
                 'message' => 'Вы не являетесь автором сообщения'
-            ];
+            ], 403);
         }
         $messageModel->text = $request->get('text');
         $messageModel->attach($request->get('files'));
@@ -110,17 +110,17 @@ class MessageController extends Controller
     public function destroy($conversation, $message) {
         $conversationModel = Conversation::findOrFail($conversation);
         if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
+            return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
-            ];
+            ], 403);
         }
         $messageModel = Message::findOrFail($message);
         if ($messageModel->user_id != auth()->user()->id) {
-            return [
+            return response()->json([
                 'success' => false,
                 'message' => 'Вы не являетесь автором сообщения'
-            ];
+            ], 403);
         }
         $messageModel->delete();
         return [

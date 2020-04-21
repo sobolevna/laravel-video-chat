@@ -65,7 +65,7 @@ class MessageTest extends TestCase {
         $response= $this->actingAs($this->user, 'api')->postJson($this->baseUrl, ['text'=>'Another text']);
         
         $response->assertStatus(201);
-        $this->assertTrue($this->conversation->users->filter(function($item){
+        $this->assertTrue($this->conversation->messages->filter(function($item){
             return $item->text == 'Another text';
         })->isNotEmpty());
         
@@ -76,17 +76,20 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        
-        $this->assertTrue(collect($data['messages'])->filter(function($item) use ($userId) {
-            return $item['id'] == 'Another text';
+        $this->assertTrue(collect($data['messages'])->filter(function($item) {
+            return $item['text'] == 'Another text';
         })->isNotEmpty());
     }
 
     public function testDestroyFail() {
         $newUser = factory(Helpers\User::class)->create(); 
-        $userId = $newUser->id;
+        $message = $this->conversation->messages()->create([
+            'user_id'=>$newUser->id,
+            'text' =>'Another text'
+        ]);
+        $id = $message->id;
         $this->conversation->users()->attach($newUser->id);
-        $response= $this->actingAs($this->user, 'api')->deleteJson($this->baseUrl.'/'.$userId);
+        $response= $this->actingAs($this->user, 'api')->deleteJson($this->baseUrl.'/'.$id);
         $response->assertStatus(403);
 
         $response= $this->actingAs($this->user, 'api')->getJson($this->baseUrl);
@@ -97,7 +100,7 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertTrue(collect($data['participants'])->filter(function($item) use ($userId) {
+        $this->assertTrue(collect($data['messages'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isNotEmpty());
     }
