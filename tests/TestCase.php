@@ -35,6 +35,8 @@ abstract class TestCase extends VendorTestCase
         parent::setUp();
         $this->loadLaravelMigrations();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->withFactories(__DIR__.'/database/factories');
     }
 
     protected function getPackageAliases($app)
@@ -61,5 +63,7 @@ abstract class TestCase extends VendorTestCase
         ]);
         $app['config']->set('filesystems.disks.local.root', __DIR__.'/storage');
         $app['config']->set('laravel-video-chat.user.model', Helpers\User::class);
+        $app['config']->set('logging.default', 'single');
+        $app['config']->set('logging.channels.single.path', __DIR__.'/storage/logs/laravel.log');
     }
 }

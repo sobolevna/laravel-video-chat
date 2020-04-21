@@ -8,10 +8,8 @@ Route::group([
     'as' => 'api.chat.',
     'middleware'=>['api', 'auth:api'],
 ], function(){
-    Route::get('/', 'ChatController@index')->name('index');
-    Route::post('/', 'ChatController@store')->name('store');
-    Route::get('/{id}', 'ChatController@show')->name('show');    
-    Route::apiResource([
+
+    Route::resources([
         'conversations'=> 'ConversationController',
         'conversations.participants' => 'ParticipantController',
         'conversations.messages' => 'MessageController',
