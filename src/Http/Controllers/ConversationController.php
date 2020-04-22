@@ -45,11 +45,11 @@ class ConversationController extends Controller
      * @param Request
      * @return \Illuminate\Http\Response
      */
-    public function show(Conversation $conversation, Request $request)
+    public function show($conversation, Request $request)
     {
         return [
             'success'=>true,
-            'conversation' => $conversation
+            'conversation' => Chat::getConversationMessageById($conversation)
         ];
     }
 
@@ -72,5 +72,23 @@ class ConversationController extends Controller
             'message'=>'Нельзя удалить беседу, если там кто-то есть',
             'success' => false
         ], 403);
+    }
+
+    public function enter(Request $request) {
+        $conversation = Conversation::firstOrCreate([
+            'name' => $request->get('name')
+        ]);
+        $userId = auth()->user()->id;
+        if (!$conversation->users()->find($userId)) {
+            $conversation->users()->attach($userId);
+        }
+        
+        /**
+         * @todo Подумать над рутами для фронта
+         */
+        return [
+            'status'=>'success',
+            'to'=> '/chat/'.$conversation->id
+        ];
     }
 }

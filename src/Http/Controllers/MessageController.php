@@ -7,7 +7,7 @@ use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Services\Recordings;
 use Illuminate\Routing\Controller;
 use Storage;
-use Sobolevna\LaravelVideoChat\Models\{Conversation, Message};
+use Sobolevna\LaravelVideoChat\Models\{Conversation, Message, File};
 
 /**
  * @todo Логику перенести в сервисные классы
@@ -30,7 +30,7 @@ class MessageController extends Controller
         }
         return [
             'success' => true,
-            'messages' => $conversation->messages
+            'messages' => $conversation->messages()->with('files')->get()
         ];
     }
 
@@ -56,10 +56,16 @@ class MessageController extends Controller
 
         $files = $request->file('files', null);
         if (!empty($files)) {
-            $fileList = [];
             foreach ($files as $file) {
-                $fileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $message->id);
+                Chat::saveFile($conversation, $file, auth()->user()->id, $message->id);
             }
+        }
+
+        $fileList = $request->get('files', null);
+        
+        if (!empty($fileList)) {
+            $fileIds = collect($fileList)->pluck('id');
+            File::whereIn('id', $fileIds)->where('message_id', 0)->update(['message_id'=>$message->id]);            
         }
         
         return response()->json([
@@ -90,11 +96,15 @@ class MessageController extends Controller
             ], 403);
         }
         $message->text = $request->get('text');
-        /**
-         * @todo Придумать, как обновлять файлы
-         */
-        //$message->files()->attach($request->get('files'));
         $message->save();
+
+        $fileList = $request->get('files', null);
+        
+        if (!empty($fileList)) {
+            $fileIds = collect($fileList)->pluck('id');
+            File::whereIn('id', $fileIds)->where('message_id', 0)->update(['message_id'=>$message->id]);            
+        }
+        
         return [
             'success' => true,
             'message' => "Сообщение отправлено"

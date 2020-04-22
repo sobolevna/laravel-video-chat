@@ -52,7 +52,7 @@ class FileController extends Controller
         $files = $request->file('files');
         $resultFileList = [];
         foreach ($files as $file) {
-            $resultFileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $request->get('messageId'));
+            $resultFileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $request->get('messageId', 0));
         }
         return response()->json([
             'success' => true,

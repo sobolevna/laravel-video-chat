@@ -9,6 +9,8 @@ Route::group([
     'middleware'=>['api', 'auth:api'],
 ], function(){
 
+    Route::post('/enter', 'ConversationController@enter')->name('conversations.enter');
+
     Route::resources([
         'conversations'=> 'ConversationController',
         'conversations.participants' => 'ParticipantController',
@@ -36,8 +38,9 @@ Route::group([
 Route::group([
     'namespace' => 'Sobolevna\LaravelVideoChat\Http\Controllers',
     'prefix' => 'chat',
-    'as'=> 'chat.'
-], function(){
+    'as'=> 'chat.',
+    'middleware'=>['auth:api']
+], function(){    
     Route::get('/{id}/preview', 'ChatController@preview')->name('preview');
     Route::get('/{id}/video', 'ChatController@video')->name('video');
 });
