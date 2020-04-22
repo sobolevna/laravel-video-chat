@@ -82,6 +82,9 @@ class MessageTest extends TestCase {
         })->isNotEmpty());
     }
 
+    /**
+     * @todo Нужен тест для файлов, если отправляются описания, а не бинарники
+     */
     public function testStoreWithFiles() {
         $file = UploadedFile::fake()->create('test.txt', 1);
         $response= $this->actingAs($this->user, 'api')
@@ -110,6 +113,9 @@ class MessageTest extends TestCase {
         })->isNotEmpty());
     }
 
+    /**
+     * @todo Нужен тест для файлов
+     */
     public function testUpdate() {
         $response= $this->actingAs($this->user, 'api')
             ->putJson($this->baseUrl.'/'.$this->message->id, [
