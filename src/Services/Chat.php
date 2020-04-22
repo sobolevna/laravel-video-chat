@@ -5,6 +5,7 @@ namespace Sobolevna\LaravelVideoChat\Services;
 use Illuminate\Contracts\Config\Repository;
 use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
 use Sobolevna\LaravelVideoChat\Models\{Conversation};
+use Carbon\Carbon;
 
 class Chat
 {
@@ -14,7 +15,15 @@ class Chat
 
     protected $userId;
 
+    /**
+     * @var Recordings
+     */
     protected $recordings;
+
+    /**
+     * @var UploadManager
+     */
+    protected $manager;
 
     /**
      * Chat constructor.
@@ -24,12 +33,14 @@ class Chat
      */
     public function __construct(
         Repository $config,
-        ConversationRepository $conversation
+        ConversationRepository $conversation,
+        UploadManager $manager
     ) {
         $this->config = $config;
         $this->conversation = $conversation;
         $this->userId = check() ? check()->user()->id : null;
         $this->recordings = new Recordings();
+        $this->manager = $manager;
     }
 
     /**
@@ -179,4 +190,22 @@ class Chat
         return $this->recordings;
     }
 
+    /**
+     * @param Conversation $conversation
+     * @param mixed $file
+     * @return File
+     */
+    public function saveFile($conversation, $file, $userId, $messageId) {
+        $fileName = Carbon::now()->format('YmdHis').'-'.$file->getClientOriginalName();
+        $path = (\Str::finish('', '/')).$fileName;
+        $content = \File::get($file->getRealPath());
+        $result = $this->manager->saveFile($path, $content);
+        if ($result === true) {
+            return $conversation->files()->create([
+                'message_id' => $messageId,
+                'name'       => $fileName,
+                'user_id'    => $userId,
+            ]);
+        }
+    }
 }

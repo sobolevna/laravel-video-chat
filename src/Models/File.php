@@ -3,9 +3,7 @@
 namespace Sobolevna\LaravelVideoChat\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Sobolevna\LaravelVideoChat\Models\File\Attribute\FileAttribute;
-use Sobolevna\LaravelVideoChat\Models\File\Relationship\FileRelationship;
-use Sobolevna\LaravelVideoChat\Models\Message\Message;
+use Sobolevna\LaravelVideoChat\Models\Message;
 
 class File extends Model {
 

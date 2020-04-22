@@ -20,7 +20,7 @@ use Chat;
  * @coversDefaultClass MessageController
  * @author sobolevna
  */
-class MessageTest extends TestCase {
+class FileTest extends TestCase {
     
     /**
      * @var Helpers\User
@@ -40,8 +40,9 @@ class MessageTest extends TestCase {
             'user_id'=> $this->user->id,
             'text'=> 'Some text'
         ]);
-        
-        $this->baseUrl = '/api/chat/conversations/'.$this->conversation->id.'/messages';
+        $file = UploadedFile::fake()->create('test.txt', 1);
+        $this->file = Chat::saveFile($this->conversation, $file, $this->user->id, $this->message->id);
+        $this->baseUrl = '/api/chat/conversations/'.$this->conversation->id.'/files';
     }
     
     /**
@@ -56,44 +57,21 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['messages'][0]['id'],$this->message->id);
+        $this->assertEquals($data['files'][0]['id'],$this->file->id);
     }
 
     /**
      * @covers ::store
      */
     public function testStore() {
-        $response= $this->actingAs($this->user, 'api')->postJson($this->baseUrl, ['text'=>'Another text']);
-        
-        $response->assertStatus(201);
-        $this->assertTrue($this->conversation->messages->filter(function($item){
-            return $item->text == 'Another text';
-        })->isNotEmpty());
-        
-        $response = $this->actingAs($this->user, 'api')->getJson($this->baseUrl);
-        
-        $response->assertStatus(200);
-        /**
-         * @todo Найти способ заставить работать assertJsonPath
-         */
-        $data = \json_decode($response->content(), true);
-        $this->assertTrue(collect($data['messages'])->filter(function($item) {
-            return $item['text'] == 'Another text';
-        })->isNotEmpty());
-    }
-
-    public function testStoreWithFiles() {
-        $file = UploadedFile::fake()->create('test.txt', 1);
+        $file = UploadedFile::fake()->create('test2.txt', 2);
         $response= $this->actingAs($this->user, 'api')
             ->postJson($this->baseUrl, [
-                'text'=>'Another text',
-                'files' => [$file]
+                'files'=>[$file], 
+                'messageId'=>$this->message->id
             ]);
         
         $response->assertStatus(201);
-        $this->assertTrue($this->conversation->messages->filter(function($item){
-            return $item->text == 'Another text';
-        })->isNotEmpty());
         $this->assertTrue($this->conversation->files->filter(function($item) use ($file){
             return stripos($item->name, $file->name) !== false;
         })->isNotEmpty());
@@ -105,37 +83,22 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content());
-        $this->assertTrue(collect($data->messages)->filter(function($item) {
-            return $item->text == 'Another text';
-        })->isNotEmpty());
-    }
-
-    public function testUpdate() {
-        $response= $this->actingAs($this->user, 'api')
-            ->putJson($this->baseUrl.'/'.$this->message->id, [
-                'text'=>'Another text',
-            ]);
-        $response->assertStatus(200);
-
-        $response = $this->actingAs($this->user, 'api')->getJson($this->baseUrl);
-        $response->assertStatus(200);
-        /**
-         * @todo Найти способ заставить работать assertJsonPath
-         */
-        $data = \json_decode($response->content());
-        $this->assertTrue(collect($data->messages)->filter(function($item) {
-            return $item->text == 'Another text';
+        $this->assertTrue(collect($data->files)->filter(function($item) use ($file){
+            return stripos($item->name, $file->name) !== false;
         })->isNotEmpty());
     }
 
     public function testDestroyFail() {
         $newUser = factory(Helpers\User::class)->create(); 
+        $this->conversation->users()->attach($newUser->id);
         $message = $this->conversation->messages()->create([
             'user_id'=>$newUser->id,
             'text' =>'Another text'
         ]);
-        $id = $message->id;
-        $this->conversation->users()->attach($newUser->id);
+        $file = UploadedFile::fake()->create('testDestroy.txt', 2);
+        $newFile = Chat::saveFile($this->conversation, $file, $newUser->id, $this->message->id);
+        $id = $newFile->id;
+        
         $response= $this->actingAs($this->user, 'api')->deleteJson($this->baseUrl.'/'.$id);
         $response->assertStatus(403);
 
@@ -147,13 +110,13 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertTrue(collect($data['messages'])->filter(function($item) use ($id) {
+        $this->assertTrue(collect($data['files'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isNotEmpty());
     }
 
     public function testDestroySuccess() {
-        $id = $this->message->id;
+        $id = $this->file->id;
         $response= $this->actingAs($this->user, 'api')->deleteJson($this->baseUrl.'/'.$id);
         $response->assertStatus(200);
 
@@ -166,7 +129,7 @@ class MessageTest extends TestCase {
          */
         $data = \json_decode($response->content(), true);
         
-        $this->assertTrue(collect($data['messages'])->filter(function($item) use ($id) {
+        $this->assertTrue(collect($data['files'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isEmpty());
     }

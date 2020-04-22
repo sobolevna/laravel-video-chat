@@ -61,7 +61,8 @@ abstract class TestCase extends VendorTestCase
             'database' => ':memory:',
             'prefix'   => '',
         ]);
-        $app['config']->set('filesystems.disks.local.root', __DIR__.'/storage');
+        //$app['config']->set('filesystems.disks.local.root', __DIR__.'/storage/app/');
+        //$app['config']->set('filesystems.disks.local.root', __DIR__.'/storage/app/public/');
         $app['config']->set('laravel-video-chat.user.model', Helpers\User::class);
         $app['config']->set('logging.default', 'single');
         $app['config']->set('logging.channels.single.path', __DIR__.'/storage/logs/laravel.log');

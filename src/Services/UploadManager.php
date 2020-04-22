@@ -79,7 +79,6 @@ class UploadManager
     public function saveFile($path, $content)
     {
         $path = $this->cleanFolder($path);
-
         return $this->disk->put($path, $content, 'public');
     }
 

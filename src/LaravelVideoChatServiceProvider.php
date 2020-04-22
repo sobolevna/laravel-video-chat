@@ -71,8 +71,8 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
         $this->app->bind('chat', function ($app) {
             $config = $app['config'];
             $conversation = $app['conversation.repository'];
-
-            return new ChatService($config, $conversation);
+            $manager = $app['upload.manager'];
+            return new ChatService($config, $conversation, $manager);
         });
     }
 

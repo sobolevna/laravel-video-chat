@@ -45,17 +45,11 @@ class ConversationController extends Controller
      * @param Request
      * @return \Illuminate\Http\Response
      */
-    public function show($conversation, Request $request)
+    public function show(Conversation $conversation, Request $request)
     {
-        try {
-            $conversationModel = Chat::getConversationMessageById($conversation);
-        }
-        catch (\ErrorException $e) {
-            return $e->getMessage();
-        }
-
         return [
-            'conversation' => $conversationModel
+            'success'=>true,
+            'conversation' => $conversation
         ];
     }
 
@@ -65,12 +59,12 @@ class ConversationController extends Controller
      * @param int $id Conversation id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($conversation) {
-        $conversationModel = Conversation::with('users')->findOrFail($conversation);
-        if ($conversationModel->users->isEmpty()) {
-            $conversationModel->delete();
+    public function destroy(Conversation $conversation) {
+        if ($conversation->users->isEmpty()) {
+            $id = $conversation->id;
+            $conversation->delete();
             return [
-                'conversation' => $conversation,
+                'conversation' => $id,
                 'success' => true
             ];
         }        

@@ -21,9 +21,8 @@ class FileController extends Controller
      * @param int $conversation 
      * @return Response
      */
-    public function index($conversation) {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+    public function index(Conversation $conversation) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return [
                 'success' => false,
                 'message' => 'У вас нет прав добавлять участников в беседу'
@@ -31,7 +30,7 @@ class FileController extends Controller
         }
         return [
             'success' => true,
-            'messages' => $conversationModel->files
+            'files' => $conversation->files
         ];
     }
 
@@ -42,35 +41,24 @@ class FileController extends Controller
      * @param Request
      * @return Response
      */
-    public function store($conversation, Request $request)
+    public function store(Conversation $conversation, Request $request)
     {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return [
                 'success' => false,
                 'message' => 'У вас нет прав отправлять файлы в беседу'
             ];
         }
+        $files = $request->file('files');
         $resultFileList = [];
         foreach ($files as $file) {
-            $fileName = Carbon::now()->format('YmdHis').'-'.$file->getClientOriginalName();
-            $path = $this->strFinish('', '/').$fileName;
-            $content = File::get($file->getRealPath());
-            $result = $this->manager->saveFile($path, $content);
-
-            if ($result === true) {
-                $resultFileList[] = $conversation->files()->create([
-                    'message_id' => $messageId,
-                    'name'       => $fileName,
-                    'user_id'    => $userId,
-                ]);
-            }
+            $resultFileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $request->get('messageId'));
         }
-        return [
+        return response()->json([
             'success' => true,
             'message' => "Файлы отправлены",
             'files' => $resultFileList
-        ];
+        ],201);
     }
 
     /**
@@ -81,22 +69,26 @@ class FileController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function destroy($conversation, $file) {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
+    public function destroy(Conversation $conversation, File $file) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
+            return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
-            ];
+            ], 403);
         }
-        $fileModel = File::findOrFail($message);
-        if ($fileModel->message->user_id != auth()->user()->id) {
-            return [
+        if ($file->message->user_id != auth()->user()->id) {
+            return response()->json([
                 'success' => false,
                 'message' => 'Вы не являетесь автором сообщения'
-            ];
+            ], 403);
         }
-        $fileModel->delete();
+        if ($file->user_id != auth()->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Вы не являетесь отправителем файла'
+            ], 403);
+        }
+        $file->delete();
         return [
             'success' => true,
             'message' => "Файл удалён"

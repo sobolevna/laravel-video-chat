@@ -24,8 +24,8 @@ class ParticipantController extends Controller
      * @param int $conversation 
      * @return Response
      */
-    public function index($conversation) {
-        $data = Conversation::with('users', 'users.profile')->findOrFail($conversation)->users;
+    public function index(Conversation $conversation) {
+        $data = $conversation->users()->with('profile')->get();
         return ['success'=>true, 'participants'=>$data];
     }
 
@@ -35,18 +35,17 @@ class ParticipantController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function store($conversation, Request $request) {
+    public function store(Conversation $conversation, Request $request) {
         $users = $request->get('users', []);
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return [
                 'success' => false,
                 'message' => 'У вас нет прав добавлять участников в беседу'
             ];
         }
         if (!empty($users)) {
-            $conversationModel->users()->attach($users);
-            $conversationModel->save();
+            $conversation->users()->attach($users);
+            $conversation->save();
         }
         return response()->json([
             'success' => true,
@@ -59,8 +58,7 @@ class ParticipantController extends Controller
      * @param int $participant
      * @return Response
      */
-    public function destroy($conversation, $participant) {
-        $conversationModel = Conversation::findOrFail($conversation);
+    public function destroy(Conversation $conversation, $participant) {
         /**
          * @todo придумать, что делать с правами
          */
@@ -70,7 +68,7 @@ class ParticipantController extends Controller
                 'message' => 'У вас нет прав удалять участников из беседы. Вы можете удалить только себя'
             ], 403);
         }
-        $conversationModel->users()->detach($participant);
+        $conversation->users()->detach($participant);
         return [
             'success' => true,
         ];

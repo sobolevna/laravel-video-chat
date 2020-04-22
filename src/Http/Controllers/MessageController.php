@@ -21,9 +21,8 @@ class MessageController extends Controller
      * @param int $conversation 
      * @return Response
      */
-    public function index($conversation) {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+    public function index(Conversation $conversation) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return [
                 'success' => false,
                 'message' => 'У вас нет прав добавлять участников в беседу'
@@ -31,7 +30,7 @@ class MessageController extends Controller
         }
         return [
             'success' => true,
-            'messages' => $conversationModel->messages
+            'messages' => $conversation->messages
         ];
     }
 
@@ -42,23 +41,25 @@ class MessageController extends Controller
      * @param Request
      * @return Response
      */
-    public function store($conversation, Request $request)
+    public function store(Conversation $conversation, Request $request)
     {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
             ], 403);
         }
-        $message = $conversationModel->messages()->create([
+        $message = $conversation->messages()->create([
             'user_id'=>auth()->user()->id,
             'text'=>$request->get('text'),
         ]);
 
-        $files = $request->get('files', null);
-        if ($files) {
-            $message->files()->attach($files);
+        $files = $request->file('files', null);
+        if (!empty($files)) {
+            $fileList = [];
+            foreach ($files as $file) {
+                $fileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $message->id);
+            }
         }
         
         return response()->json([
@@ -75,24 +76,25 @@ class MessageController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function update($conversation, $message, Request $request) {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+    public function update(Conversation $conversation, Message $message, Request $request) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
             ], 403);
         }
-        $messageModel = Message::findOrFail($message);
-        if ($messageModel->user_id != auth()->user()->id) {
+        if ($message->user_id != auth()->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Вы не являетесь автором сообщения'
             ], 403);
         }
-        $messageModel->text = $request->get('text');
-        $messageModel->attach($request->get('files'));
-        $messageModel->save();
+        $message->text = $request->get('text');
+        /**
+         * @todo Придумать, как обновлять файлы
+         */
+        //$message->files()->attach($request->get('files'));
+        $message->save();
         return [
             'success' => true,
             'message' => "Сообщение отправлено"
@@ -107,22 +109,20 @@ class MessageController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function destroy($conversation, $message) {
-        $conversationModel = Conversation::findOrFail($conversation);
-        if (!$conversationModel->users()->where('users.id', auth()->user()->id)->first()) {
+    public function destroy(Conversation $conversation, Message $message) {
+        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав отправлять сообщения в беседу'
             ], 403);
         }
-        $messageModel = Message::findOrFail($message);
-        if ($messageModel->user_id != auth()->user()->id) {
+        if ($message->user_id != auth()->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Вы не являетесь автором сообщения'
             ], 403);
         }
-        $messageModel->delete();
+        $message->delete();
         return [
             'success' => true,
             'message' => "Сообщение удалено"
