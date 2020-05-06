@@ -10,6 +10,7 @@ use Sobolevna\LaravelVideoChat\Events\{
 };
 use Sobolevna\LaravelVideoChat\Models\Conversation;
 use Illuminate\Routing\Controller;
+use SquareetLabs\LaravelOpenVidu\Facades\OpenVidu;
 use SquareetLabs\LaravelOpenVidu\Http\Requests\GenerateTokenRequest;
 use SquareetLabs\LaravelOpenVidu\Builders\SessionPropertiesBuilder;
 use SquareetLabs\LaravelOpenVidu\Builders\TokenOptionsBuilder;
@@ -104,6 +105,6 @@ class ConversationController extends Controller
     public function token(Request $request) {
         $session = OpenVidu::createSession(SessionPropertiesBuilder::build($request->get('session')), $request->get('force'));
         $token = $session->generateToken(TokenOptionsBuilder::build($request->get('tokenOptions')));
-        return Response::json(['token' => $token], 200);
+        return response()->json(['token' => $token], 200);
     }
 }
