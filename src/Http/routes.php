@@ -11,6 +11,8 @@ Route::group([
 
     Route::post('/enter', 'ConversationController@enter')->name('conversations.enter');
 
+    Route::post('/token', 'ConversationController@token')->name('token');
+
     Route::resources([
         'conversations'=> 'ConversationController',
         'conversations.participants' => 'ParticipantController',
