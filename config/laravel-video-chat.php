@@ -16,6 +16,10 @@ return [
         'messages_table'            => 'messages',
         'conversations_users_table' => 'conversations_users',
         'files_table'               => 'files',
+        'participants_table'        => 'participants',
+        'connections_table'         => 'connections',
+        'recordings_table'          => 'recordings',
+        'openvidu_logs_table'       => 'openvidu_logs'
     ],
     'channel' => [
         'new_conversation_created' => 'new-conversation-created',

@@ -11,7 +11,8 @@ Route::group([
 
     Route::post('/enter', 'ConversationController@enter')->name('conversations.enter');
 
-    Route::post('/token', 'ConversationController@token')->name('token');
+    Route::post('/token', '\Squareetlabs\LaravelOpenVidu\HTTP\Controllers\OpenViduController@token')->name('token');
+    Route::post('/webhook', '\Squareetlabs\LaravelOpenVidu\HTTP\Controllers\OpenViduController@webhook')->name('webhook');
 
     Route::resources([
         'conversations'=> 'ConversationController',

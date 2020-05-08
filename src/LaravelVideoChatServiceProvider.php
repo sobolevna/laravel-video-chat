@@ -3,13 +3,12 @@
 namespace Sobolevna\LaravelVideoChat;
 
 use Dflydev\ApacheMimeTypes\PhpRepository;
-use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\{Broadcast,Route,Event};
 use Illuminate\Support\ServiceProvider;
 use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
 use Sobolevna\LaravelVideoChat\Services\Chat as ChatService;
 use Sobolevna\LaravelVideoChat\Services\UploadManager;
-use Illuminate\Support\Facades\Route;
 
 class LaravelVideoChatServiceProvider extends ServiceProvider
 {
@@ -26,6 +25,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
 
         $this->loadMigrationsFrom($this->migrationsPath());
         $this->registerBroadcast();
+        Event::subscribe($subscriber);
     }
 
     /**
