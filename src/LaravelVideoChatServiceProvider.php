@@ -9,6 +9,7 @@ use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Repositories\ConversationRepository;
 use Sobolevna\LaravelVideoChat\Services\Chat as ChatService;
 use Sobolevna\LaravelVideoChat\Services\UploadManager;
+use Sobolevna\LaravelVideoChat\Listeners\OpenviduEventSubscriber;
 
 class LaravelVideoChatServiceProvider extends ServiceProvider
 {
@@ -25,7 +26,7 @@ class LaravelVideoChatServiceProvider extends ServiceProvider
 
         $this->loadMigrationsFrom($this->migrationsPath());
         $this->registerBroadcast();
-        Event::subscribe($subscriber);
+        Event::subscribe(OpenviduEventSubscriber::class);
     }
 
     /**

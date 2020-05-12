@@ -3,15 +3,18 @@
 namespace Sobolevna\LaravelVideoChat\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Connection extends Model
 {
+    use SoftDeletes;
 
     protected $table;
 
     protected $fillable = [
         'user_id', 
         'session_id',
+        'participant_id',
         'connection',
         'receiving_from',
         'audio_enabled',

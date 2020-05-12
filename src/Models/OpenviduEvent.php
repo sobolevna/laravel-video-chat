@@ -3,14 +3,18 @@
 namespace Sobolevna\LaravelVideoChat\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OpenviduParticipant extends Model
+class OpenviduEvent extends Model
 {
+    use SoftDeletes;
 
     protected $table;
 
     protected $fillable = [
-        'eventData'
+        'event_name',
+        'event_data',
+        'session_id'
     ];
 
     /**
@@ -19,7 +23,7 @@ class OpenviduParticipant extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->table = config('laravel-video-chat.table.openvidu_logs_table');
+        $this->table = config('laravel-video-chat.table.openvidu_events_table');
     }
     
     public function conversation() {

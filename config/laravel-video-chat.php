@@ -19,7 +19,7 @@ return [
         'participants_table'        => 'participants',
         'connections_table'         => 'connections',
         'recordings_table'          => 'recordings',
-        'openvidu_logs_table'       => 'openvidu_logs'
+        'openvidu_events_table'       => 'openvidu_events'
     ],
     'channel' => [
         'new_conversation_created' => 'new-conversation-created',

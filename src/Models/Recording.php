@@ -3,9 +3,11 @@
 namespace Sobolevna\LaravelVideoChat\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Recording extends Model
 {
+    use SoftDeletes;
 
     protected $table;
 

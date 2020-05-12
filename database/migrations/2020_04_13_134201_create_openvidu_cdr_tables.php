@@ -18,9 +18,11 @@ class CreateOpenviduCdrTables extends Migration
         //     $table->uuid('session_id', Uuid::uuid4()->toString());
         // });
 
-        Schema::create(config('laravel-video-chat.table.openvidu_logs_table'), function (Blueprint $table) {
+        Schema::create(config('laravel-video-chat.table.openvidu_events_table'), function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->json('eventData');
+            $table->string('session_id');
+            $table->string('event_name');
+            $table->json('event_data');
 
             $table->timestamps();
             $table->softDeletes();
@@ -28,16 +30,16 @@ class CreateOpenviduCdrTables extends Migration
         
         Schema::create(config('laravel-video-chat.table.participants_table'), function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('user_id');
-            $table->unsignedInteger('session_id');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->string('session_id');
             $table->string('participant_id');
             $table->string('location')->nullable();
             $table->string('platform');
-            $table->string('client_data');
-            $table->string('server_data');
-            $table->datetime('start_time');
-            $table->integer('duration');
-            $table->string('reason');
+            $table->string('client_data')->nullable();
+            $table->string('server_data')->nullable();
+            $table->datetime('start_time')->nullable();
+            $table->integer('duration')->nullable();
+            $table->enum('reason', ["disconnect","forceDisconnectByUser","forceDisconnectByServer","sessionClosedByServer","networkDisconnect","openviduServerStopped"])->nullable();
 
             $table->timestamps();
             $table->softDeletes();
@@ -45,18 +47,31 @@ class CreateOpenviduCdrTables extends Migration
 
         Schema::create(config('laravel-video-chat.table.connections_table'), function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('user_id');
-            $table->unsignedInteger('session_id');
-            $table->string('connection');
-            $table->string('receiving_from');
-            $table->boolean('audio_enabled');
-            $table->boolean('video_enabled');
-            $table->string('video_source');
+            $table->unsignedInteger('user_id')->nullable();
+            $table->string('session_id');
+            $table->string('participant_id');
+            $table->enum('connection', ["INBOUND","OUTBOUND"]);
+            $table->string('receiving_from')->nullable();
+            $table->boolean('audio_enabled')->default(true);
+            $table->boolean('video_enabled')->default(true);
+            $table->enum('video_source',["CAMERA","SCREEN"]);
             $table->string('video_framerate');
-            $table->string('video_dimensions');
-            $table->datetime('start_time');
-            $table->integer('duration');
-            $table->string('reason');
+            $table->integer('video_dimensions');
+            $table->datetime('start_time')->nullable();
+            $table->integer('duration')->nullable();
+            $table->enum('reason', [
+                "unsubscribe",
+                "unpublish",
+                "disconnect",
+                "forceUnpublishByUser",
+                "forceUnpublishByServer",
+                "forceDisconnectByUser",
+                "forceDisconnectByServer",
+                "sessionClosedByServer",
+                "networkDisconnect",
+                "openviduServerStopped",
+                "mediaServerDisconnect"
+            ])->nullable();
 
             $table->timestamps();
             $table->softDeletes();
@@ -71,14 +86,21 @@ class CreateOpenviduCdrTables extends Migration
             $table->string('resolution');
             $table->string('recording_layout');
             $table->string('session_id');
-            $table->integer("size");
+            $table->integer("size")->nullable();
             $table->datetime('start_time');
-            $table->float("duration");
-            $table->string('url');
-            $table->boolean('has_audio');
-            $table->boolean('has_video');
-            $table->string('status');
-            $table->string('reason')->nullable();
+            $table->float("duration")->nullable();
+            $table->string('url')->nullable();
+            $table->boolean('has_audio')->default(true);
+            $table->boolean('has_video')->default(true);
+            $table->enum('status', ["started","stopped","ready","failed"]);
+            $table->enum('reason', [
+                "recordingStoppedByServer",
+                "lastParticipantLeft",
+                "sessionClosedByServer",
+                "automaticStop",
+                "openviduServerStopped",
+                "mediaServerDisconnect"
+            ])->nullable();
 
             $table->timestamps();
             $table->softDeletes();
