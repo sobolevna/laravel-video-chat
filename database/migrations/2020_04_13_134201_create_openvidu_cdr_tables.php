@@ -118,7 +118,7 @@ class CreateOpenviduCdrTables extends Migration
         //     $table->dropColumn('session_id', Uuid::uuid4()->toString());
         // });
 
-        Schema::dropIfExists(config('laravel-video-chat.table.openvidu_logs_table'));
+        Schema::dropIfExists(config('laravel-video-chat.table.openvidu_events_table'));
         Schema::dropIfExists(config('laravel-video-chat.table.participants_table'));
         Schema::dropIfExists(config('laravel-video-chat.table.connections_table'));
         Schema::dropIfExists(config('laravel-video-chat.table.recordings_table'));
