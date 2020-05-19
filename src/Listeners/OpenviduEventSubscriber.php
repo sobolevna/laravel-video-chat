@@ -35,11 +35,11 @@ class OpenviduEventSubscriber
             }
         }
         catch(\Exception $e) {
-            echo '';
             $userId = null;
         }
         $data['user_id'] = $userId;
         $data['event_id'] = $log->id;
+        $data['start_time'] = !empty($data['start_time']) ? date('Y-m-d H:i:s', $data['start_time'] / 1000) : null;
         return $data;
     }
 
@@ -71,8 +71,13 @@ class OpenviduEventSubscriber
     public function handleParticipantLeft($event) {
         $data = $this->getEventData($event);
         $participant = Models\OpenviduParticipant::where('session_id', $data['session_id'])->where('participant_id', $data['participant_id'])->first();
-        $participant->update($data);
-        $participant->save();
+        if (!$participant) {
+            $participant = Models\OpenviduParticipant::create($data);
+        }
+        else {
+            $participant->update($data);
+            $participant->save();
+        }
         $participant->delete();
     }
 
@@ -86,8 +91,13 @@ class OpenviduEventSubscriber
     public function handleWebrtcConnectionDestroyed($event) {
         $data = $this->getEventData($event);
         $connection = Models\Connection::where('session_id', $data['session_id'])->where('participant_id', $data['participant_id'])->first();
-        $connection->update($data);
-        $connection->save();
+        if (!$connection) {
+            $connection = Models\Connection::create($data);
+        }
+        else {
+            $connection->update($data);
+            $connection->save();
+        }        
         $connection->delete();
     }
 

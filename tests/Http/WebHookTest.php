@@ -213,5 +213,33 @@ class WebHookTest extends TestCase {
             'fail' => [array_merge($basic, $fail)],
             'ready' => [array_merge($basic, $ready)]
         ];
+    } 
+
+    /**
+     * @dataProvider providerCommonErrors
+     */
+    public function testCommonErrors($eventData) {
+        $response = $this->postJson('/api/chat/webhook', $eventData);
+        $response->assertStatus(200);
+    }
+
+    public function providerCommonErrors() {
+        return [
+            'participantLeft_1589893664531' => [
+                [
+                    "sessionId"=> "1",
+                    "timestamp"=> "1589893664531",
+                    "startTime"=> "1589893540238",
+                    "duration"=> "124",
+                    "reason"=> "disconnect",
+                    "participantId"=> "con_A8XdKgCrSP",
+                    "location"=> "unknown",
+                    "platform"=> "Firefox 76.0 on Ubuntu 64-bit",
+                    "clientData"=> "{\"userId\"=>1}",
+                    "serverData"=> "",
+                    "event"=> "participantLeft"
+                ]    
+            ]
+        ];
     }
 }

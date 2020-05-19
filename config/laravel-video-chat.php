@@ -31,5 +31,6 @@ return [
     'settings' => [
         'use-package-routes' =>true,
         'controller' => \Sobolevna\LaravelVideoChat\Http\Controllers\ChatController::class,
-    ]
+    ],
+    'recording' => env('OPENVIDU_RECORDING', true)
 ];

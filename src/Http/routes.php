@@ -37,7 +37,7 @@ Route::group([
     Route::get('/{id}/recordings', 'ChatController@recordings')->name('recordings');
 });
 
-Route::post('api/chat/webhook', '\SquareetLabs\LaravelOpenVidu\Http\Controllers\OpenViduController@webhook')->middleware(['api'])->name('api.chat.webhook');
+Route::post('/api/chat/webhook', '\SquareetLabs\LaravelOpenVidu\Http\Controllers\OpenViduController@webhook')->middleware(['api'])->name('api.chat.webhook');
 
 Route::group([
     'namespace' => 'Sobolevna\LaravelVideoChat\Http\Controllers',

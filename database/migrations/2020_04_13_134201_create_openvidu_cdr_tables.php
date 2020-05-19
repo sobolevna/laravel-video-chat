@@ -56,7 +56,7 @@ class CreateOpenviduCdrTables extends Migration
             $table->boolean('video_enabled')->default(true);
             $table->enum('video_source',["CAMERA","SCREEN"]);
             $table->string('video_framerate');
-            $table->integer('video_dimensions');
+            $table->string('video_dimensions');
             $table->datetime('start_time')->nullable();
             $table->integer('duration')->nullable();
             $table->enum('reason', [
