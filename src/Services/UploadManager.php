@@ -40,7 +40,9 @@ class UploadManager
     public function fileDetails($path)
     {
         $path = '/'.ltrim($path, '/');
-
+        if (!$this->checkFileExists($path)) {
+            return null;
+        }
         return [
             'name'     => basename($path),
             'fullPath' => $path,
@@ -91,11 +93,7 @@ class UploadManager
      */
     public function checkFileExists($path)
     {
-        if ($this->disk->exists($path)) {
-            return true;
-        }
-
-        return false;
+        return !!$this->disk->exists($path);
     }
 
     /**
@@ -145,6 +143,6 @@ class UploadManager
      */
     private function fileSize($path)
     {
-        return $this->disk->size($path);
+        return $this->checkFileExists($path) ? $this->disk->size($path) : 0;
     }
 }
