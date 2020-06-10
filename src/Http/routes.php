@@ -35,17 +35,21 @@ Route::group([
         Chat::leaveFromGroupConversation($id);
     });
     Route::get('/{id}/recordings', 'ChatController@recordings')->name('recordings');
+    
 });
 
 Route::post('/api/chat/webhook', '\SquareetLabs\LaravelOpenVidu\Http\Controllers\OpenViduController@webhook')->middleware(['api'])->name('api.chat.webhook');
 
+/**
+ * @todo Сделать так, чтобы ссылки были защищёнными
+ */
 Route::group([
     'namespace' => 'Sobolevna\LaravelVideoChat\Http\Controllers',
-    'prefix' => 'chat',
-    'as'=> 'chat.',
-    'middleware'=>['auth:api']
+    'prefix' => 'api/chat',
+    'as'=> 'api.chat.',
+    'middleware'=>[]
 ], function(){    
-    Route::get('/{id}/preview', 'ChatController@preview')->name('preview');
-    Route::get('/{id}/video', 'ChatController@video')->name('video');
+    Route::get('/preview/{id}', 'ChatController@preview')->name('preview');
+    Route::get('/video/{id}', 'ChatController@video')->name('video');
 });
 

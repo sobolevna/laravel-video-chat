@@ -16,7 +16,7 @@ class Recordings
 {
     /**
      * Get all video recordings of a conversation
-     * 
+     * @todo Брать из таблицы записей и потом сверять с файловой системой
      * @param int $id Conversation id
      * @return array
      */
@@ -34,8 +34,8 @@ class Recordings
                 continue;
             }
             $video = json_decode(Storage::get("video/$videoId/.recording.$videoId"), true);
-            $video['img_preview'] = route('chat.preview', $videoId);
-            $video['url'] = route('chat.video', $videoId);
+            $video['img_preview'] = secure_url('/api/chat/preview/'. $videoId);
+            $video['url'] = secure_url('/api/chat/video/'. $videoId);
             $videos[] = $video;
         }
         return $videos;
