@@ -31,9 +31,9 @@ class LaravelVideoChatServiceProviderTest extends TestCase
     }
 
     public function testRoutes() {
-        $this->assertTrue(Route::has('api.chat.conversations.index'));
-        $this->assertTrue(Route::has('api.chat.conversations.participants.index'));
-        $this->assertTrue(Route::has('api.chat.conversations.messages.index'));
-        $this->assertTrue(Route::has('api.chat.conversations.files.index'));
+        $this->assertTrue(Route::has('api.chat.conversation.index'));
+        $this->assertTrue(Route::has('api.chat.participant.index'));
+        $this->assertTrue(Route::has('api.chat.message.index'));
+        $this->assertTrue(Route::has('api.chat.file.index'));
     }
 }

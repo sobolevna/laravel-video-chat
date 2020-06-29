@@ -21,16 +21,21 @@ class MessageController extends Controller
      * @param int $conversation 
      * @return Response
      */
-    public function index(Conversation $conversation) {
-        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
-                'success' => false,
-                'message' => 'У вас нет прав добавлять участников в беседу'
-            ];
-        }
+    public function index(Request $request) {
+        $request->validate([
+            'conversation_id' => 'exists:conversations,id'
+        ]);
+        $paginator = Message::when($request->get('conversation_id'), function($query) use ($request) {
+            $query->where('conversation_id', $request->get('conversation_id'));
+        })->paginate($request->get('per_page', 50));
+        
         return [
             'success' => true,
-            'messages' => $conversation->messages()->with('files')->get()
+            'current_page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'pages' => $paginator->lastItem(),
+            'items' => $paginator->items(),
+            'total' => $paginator->total()
         ];
     }
 
@@ -41,8 +46,12 @@ class MessageController extends Controller
      * @param Request
      * @return Response
      */
-    public function store(Conversation $conversation, Request $request)
+    public function store(Request $request)
     {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id'
+        ]);
+        $conversation = Conversation::find($request->get('conversation_id'));
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,
@@ -82,7 +91,8 @@ class MessageController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function update(Conversation $conversation, Message $message, Request $request) {
+    public function update(Message $message, Request $request) {
+        $conversation = $message->conversation;;
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,
@@ -119,7 +129,8 @@ class MessageController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function destroy(Conversation $conversation, Message $message) {
+    public function destroy(Message $message) {
+        $conversation = $message->conversation;
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,

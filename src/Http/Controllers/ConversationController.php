@@ -37,7 +37,17 @@ class ConversationController extends Controller
      */
     public function store(Request $request)
     {
-        $conversation = Chat::addParticipant($request->get('name'), auth()->user()->id);
+        $request->validate([
+            'name' => 'required|string',
+            'users' => 'array',
+            'users.*' => 'integer|not_exists:users,id'
+        ]);
+        $conversation = Conversation::firstOrCreate(['name' => $request->get('name')]);
+        $users = $request->get('users', []);
+        if (!$conversation->users()->find(auth()->user()->id)) {
+            $users[] = auth()->user()->id;   
+        }             
+        $conversation->users()->attach($users);
         return response()->json(['success'=>true, 'conversationId'=>$conversation->id], 201);
     }
 

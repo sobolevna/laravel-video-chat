@@ -42,7 +42,7 @@ class FileTest extends TestCase {
         ]);
         $file = UploadedFile::fake()->create('test.txt', 1);
         $this->file = Chat::saveFile($this->conversation, $file, $this->user->id, $this->message->id);
-        $this->baseUrl = '/api/chat/conversations/'.$this->conversation->id.'/files';
+        $this->baseUrl = '/api/chat/file';
     }
     
     /**
@@ -57,7 +57,7 @@ class FileTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['files'][0]['id'],$this->file->id);
+        $this->assertEquals($data['items'][0]['id'],$this->file->id);
     }
 
     /**
@@ -68,7 +68,7 @@ class FileTest extends TestCase {
         $response= $this->actingAs($this->user, 'api')
             ->postJson($this->baseUrl, [
                 'files'=>[$file], 
-                'messageId'=>$this->message->id
+                'message_id'=>$this->message->id
             ]);
         
         $response->assertStatus(201);
@@ -83,7 +83,7 @@ class FileTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content());
-        $this->assertTrue(collect($data->files)->filter(function($item) use ($file){
+        $this->assertTrue(collect($data->items)->filter(function($item) use ($file){
             return stripos($item->name, $file->name) !== false;
         })->isNotEmpty());
     }
@@ -110,7 +110,7 @@ class FileTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertTrue(collect($data['files'])->filter(function($item) use ($id) {
+        $this->assertTrue(collect($data['items'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isNotEmpty());
     }
@@ -129,7 +129,7 @@ class FileTest extends TestCase {
          */
         $data = \json_decode($response->content(), true);
         
-        $this->assertTrue(collect($data['files'])->filter(function($item) use ($id) {
+        $this->assertTrue(collect($data['items'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isEmpty());
     }

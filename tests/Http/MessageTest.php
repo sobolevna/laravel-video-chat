@@ -41,29 +41,31 @@ class MessageTest extends TestCase {
             'text'=> 'Some text'
         ]);
         
-        $this->baseUrl = '/api/chat/conversations/'.$this->conversation->id.'/messages';
+        $this->baseUrl = '/api/chat/message';
     }
     
     /**
      * @covers ::index
      */
     public function testIndex() {
-        $response= $this->actingAs($this->user, 'api')->getJson($this->baseUrl);
-        
-        $response->assertStatus(200);
-        
-        /**
-         * @todo Найти способ заставить работать assertJsonPath
-         */
-        $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['messages'][0]['id'],$this->message->id);
+        $response= $this->actingAs($this->user, 'api')->getJson($this->baseUrl, ['conversation_id' => $this->conversation->id]);
+        $response->assertStatus(200);        
+        $response->assertJson([
+            'success' => true,
+            'current_page' => 1,
+            'items' => [
+                [
+                    'id' => $this->message->id
+                ]
+            ]
+        ]);
     }
 
     /**
      * @covers ::store
      */
     public function testStore() {
-        $response= $this->actingAs($this->user, 'api')->postJson($this->baseUrl, ['text'=>'Another text']);
+        $response= $this->actingAs($this->user, 'api')->postJson($this->baseUrl, ['text'=>'Another text', 'conversation_id' => $this->conversation->id]);
         
         $response->assertStatus(201);
         $this->assertTrue($this->conversation->messages->filter(function($item){
@@ -76,9 +78,9 @@ class MessageTest extends TestCase {
         /**
          * @todo Найти способ заставить работать assertJsonPath
          */
-        $data = \json_decode($response->content(), true);
-        $this->assertTrue(collect($data['messages'])->filter(function($item) {
-            return $item['text'] == 'Another text';
+        $data = \json_decode($response->content());
+        $this->assertTrue(collect($data->items)->filter(function($item) {
+            return $item->text == 'Another text';
         })->isNotEmpty());
     }
 
@@ -89,6 +91,7 @@ class MessageTest extends TestCase {
         $file = UploadedFile::fake()->create('test.txt', 1);
         $response= $this->actingAs($this->user, 'api')
             ->postJson($this->baseUrl, [
+                'conversation_id' => $this->conversation->id,
                 'text'=>'Another text',
                 'files' => [$file]
             ]);
@@ -101,14 +104,13 @@ class MessageTest extends TestCase {
             return stripos($item->name, $file->name) !== false;
         })->isNotEmpty());
         
-        $response = $this->actingAs($this->user, 'api')->getJson($this->baseUrl);
-        
+        $response = $this->actingAs($this->user, 'api')->getJson($this->baseUrl);        
         $response->assertStatus(200);
         /**
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content());
-        $this->assertTrue(collect($data->messages)->filter(function($item) {
+        $this->assertTrue(collect($data->items)->filter(function($item) {
             return $item->text == 'Another text';
         })->isNotEmpty());
     }
@@ -129,7 +131,7 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content());
-        $this->assertTrue(collect($data->messages)->filter(function($item) {
+        $this->assertTrue(collect($data->items)->filter(function($item) {
             return $item->text == 'Another text';
         })->isNotEmpty());
     }
@@ -153,7 +155,7 @@ class MessageTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertTrue(collect($data['messages'])->filter(function($item) use ($id) {
+        $this->assertTrue(collect($data['items'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isNotEmpty());
     }
@@ -172,7 +174,7 @@ class MessageTest extends TestCase {
          */
         $data = \json_decode($response->content(), true);
         
-        $this->assertTrue(collect($data['messages'])->filter(function($item) use ($id) {
+        $this->assertTrue(collect($data['items'])->filter(function($item) use ($id) {
             return $item['id'] == $id;
         })->isEmpty());
     }

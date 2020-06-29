@@ -38,7 +38,7 @@ class ConversationTest extends TestCase {
      * @covers ::index
      */
     public function testIndex() {
-        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversations');
+        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversation');
         
         $response->assertStatus(200);
         
@@ -54,7 +54,7 @@ class ConversationTest extends TestCase {
      */
     public function testStore() {
         $conversationName = 'conversation2';
-        $response= $this->actingAs($this->user, 'api')->postJson('/api/chat/conversations', ['name'=>$conversationName]);
+        $response= $this->actingAs($this->user, 'api')->postJson('/api/chat/conversation', ['name'=>$conversationName]);
         
         $response->assertStatus(201);
         $conversation = Conversation::with('users')->where('name', $conversationName)->first();
@@ -68,7 +68,7 @@ class ConversationTest extends TestCase {
             return $item->id == $userId;
         })->isNotEmpty());
         
-        $response = $this->actingAs($this->user, 'api')->getJson('/api/chat/conversations');
+        $response = $this->actingAs($this->user, 'api')->getJson('/api/chat/conversation');
         
         $response->assertStatus(200);
         /**
@@ -82,16 +82,16 @@ class ConversationTest extends TestCase {
     }
 
     public function testShow() {
-        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversations/'.$this->conversation->id);
+        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversation/'.$this->conversation->id);
         $response->assertStatus(200);
         $data = \json_decode($response->content(), true);
         $this->assertEquals($data['conversation']['name'],$this->conversation->name);   
     }
 
     public function testDestroyFail() {
-        $response= $this->actingAs($this->user, 'api')->deleteJson('/api/chat/conversations/'.$this->conversation->id);
+        $response= $this->actingAs($this->user, 'api')->deleteJson('/api/chat/conversation/'.$this->conversation->id);
         $response->assertStatus(403);
-        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversations');
+        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversation');
         
         $response->assertStatus(200);
         
@@ -104,10 +104,10 @@ class ConversationTest extends TestCase {
 
     public function testDestroySuccess() {
         $this->conversation->users()->detach();
-        $response= $this->actingAs($this->user, 'api')->deleteJson('/api/chat/conversations/'.$this->conversation->id);
+        $response= $this->actingAs($this->user, 'api')->deleteJson('/api/chat/conversation/'.$this->conversation->id);
         $response->assertStatus(200);
 
-        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversations');
+        $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversation');
         
         $response->assertStatus(200);
         
@@ -118,4 +118,16 @@ class ConversationTest extends TestCase {
         $this->assertEquals($data['conversations'],[]);
     }
     
+    public function testAddParticipant() {
+        $user = factory(Helpers\User::class)->create();
+        $response= $this->actingAs($user, 'api')->postJson('/api/chat/conversation', ['name'=>$this->conversation->name]);
+        $response->assertStatus(201);
+        $this->assertNotNull($this->conversation->users()->find($user->id));
+    }
+    
+    public function testAddExistingParticipant() {
+        $response= $this->actingAs($this->user, 'api')->postJson('/api/chat/conversation', ['name'=>$this->conversation->name]);
+        $response->assertStatus(201);
+        $this->assertNotNull($this->conversation->users()->find($this->user->id));
+    }
 }

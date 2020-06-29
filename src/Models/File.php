@@ -26,13 +26,6 @@ class File extends Model {
     /**
      * @return mixed
      */
-    public function conversation() {
-        return $this->morphTo();
-    }
-
-    /**
-     * @return mixed
-     */
     public function message() {
         return $this->belongsTo(Message::class, 'message_id');
     }

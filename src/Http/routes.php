@@ -14,10 +14,10 @@ Route::group([
     Route::post('/token', '\SquareetLabs\LaravelOpenVidu\Http\Controllers\OpenViduController@token')->name('token');     
 
     Route::resources([
-        'conversations'=> 'ConversationController',
-        'conversations.participants' => 'ParticipantController',
-        'conversations.messages' => 'MessageController',
-        'conversations.files' => 'FileController',
+        'conversation'=> 'ConversationController',
+        'participant' => 'ParticipantController',
+        'message' => 'MessageController',
+        'file' => 'FileController',
     ]);
     
     Route::group([

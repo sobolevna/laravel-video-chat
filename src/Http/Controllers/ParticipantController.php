@@ -24,7 +24,10 @@ class ParticipantController extends Controller
      * @param int $conversation 
      * @return Response
      */
-    public function index(Conversation $conversation) {
+    public function index() {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id'
+        ]);        
         $data = $conversation->users()->with('profile')->get();
         return ['success'=>true, 'participants'=>$data];
     }
@@ -35,13 +38,17 @@ class ParticipantController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function store(Conversation $conversation, Request $request) {
+    public function store(Request $request) {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id',
+            'users' => 'required|array',
+        ]);
         $users = $request->get('users', []);
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
+            return response()->json([
                 'success' => false,
                 'message' => 'У вас нет прав добавлять участников в беседу'
-            ];
+            ], 403);
         }
         if (!empty($users)) {
             $conversation->users()->attach($users);
@@ -58,10 +65,10 @@ class ParticipantController extends Controller
      * @param int $participant
      * @return Response
      */
-    public function destroy(Conversation $conversation, $participant) {
-        /**
-         * @todo придумать, что делать с правами
-         */
+    public function destroy($participant) {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id'
+        ]);
         if (auth()->user()->id != $participant) {
             return response()->json([
                 'success' => false,

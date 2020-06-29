@@ -34,7 +34,7 @@ class ParticipantTest extends TestCase {
         $this->user = factory(Helpers\User::class)->create();
         $this->conversation = Conversation::create(['name'=>'conversation1']);
         $this->conversation->users()->attach($this->user->id);
-        $this->baseUrl = '/api/chat/conversations/'.$this->conversation->id.'/participants';
+        $this->baseUrl = '/api/chat/participant';
     }
     
     /**
@@ -48,7 +48,9 @@ class ParticipantTest extends TestCase {
         /**
          * @todo Найти способ заставить работать assertJsonPath
          */
+        $response->dump();
         $data = \json_decode($response->content(), true);
+        
         $this->assertEquals($data['participants'][0]['id'],$this->user->id);
     }
 

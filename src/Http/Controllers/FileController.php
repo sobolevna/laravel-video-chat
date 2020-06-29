@@ -10,7 +10,7 @@ use Sobolevna\LaravelVideoChat\Events\{
 };
 use Illuminate\Routing\Controller;
 use Storage;
-use Sobolevna\LaravelVideoChat\Models\{Conversation, File};
+use Sobolevna\LaravelVideoChat\Models\{Conversation, Message, File};
 
 /**
  * @todo Логику перенести в сервисные классы
@@ -21,16 +21,30 @@ class FileController extends Controller
      * @param int $conversation 
      * @return Response
      */
-    public function index(Conversation $conversation) {
-        if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
-            return [
-                'success' => false,
-                'message' => 'У вас нет прав добавлять участников в беседу'
-            ];
-        }
+    public function index(Request $request) {        
+        $request->validate([
+            'conversation_id' => 'exists:conversations,id',
+            'user_id' => 'exists:users,id',
+            'message_id' => 'exists:messages,id',
+        ]);
+        $paginator = File::when($request->get('conversation_id'), function($query) use ($request) {
+            $query->where('conversation_id', $request->get('conversation_id'));
+        })
+            ->when($request->get('user_id'), function($query) use ($request) {
+                $query->where('user_id', $request->get('user_id'));
+            })
+            ->when($request->get('message_id'), function($query) use ($request) {
+                $query->where('message_id', $request->get('message_id'));
+            })
+            ->paginate($request->get('per_page', 50));
+        
         return [
             'success' => true,
-            'files' => $conversation->files
+            'current_page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'pages' => $paginator->lastItem(),
+            'items' => $paginator->items(),
+            'total' => $paginator->total()
         ];
     }
 
@@ -41,8 +55,14 @@ class FileController extends Controller
      * @param Request
      * @return Response
      */
-    public function store(Conversation $conversation, Request $request)
-    {
+    public function store(Request $request)
+    {   
+        $request->validate([
+            'message_id' => 'required|exists:messages,id',
+            'files' => 'array',
+            'files.*' => 'file',
+        ]);
+        $conversation = Message::find($request->get('message_id'))->conversation;
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return [
                 'success' => false,
@@ -52,7 +72,7 @@ class FileController extends Controller
         $files = $request->file('files');
         $resultFileList = [];
         foreach ($files as $file) {
-            $resultFileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $request->get('messageId', 0));
+            $resultFileList[] = Chat::saveFile($conversation, $file, auth()->user()->id, $request->get('message_id', 0));
         }
         return response()->json([
             'success' => true,
@@ -69,7 +89,10 @@ class FileController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function destroy(Conversation $conversation, File $file) {
+    public function destroy(File $file, Request $request) {           
+        
+        $conversation = $file->message->conversation;
+
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return response()->json([
                 'success' => false,
