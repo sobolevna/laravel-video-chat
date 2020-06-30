@@ -46,7 +46,7 @@ class ConversationTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['conversations'][0]['name'],$this->conversation->name);
+        $this->assertEquals($data['items'][0]['name'],$this->conversation->name);
     }
 
     /**
@@ -76,7 +76,7 @@ class ConversationTest extends TestCase {
          */
         $data = \json_decode($response->content(), true);
         
-        $this->assertTrue(collect($data['conversations'])->filter(function($item) use ($conversationName ) {
+        $this->assertTrue(collect($data['items'])->filter(function($item) use ($conversationName ) {
             return $item['name'] == $conversationName ;
         })->isNotEmpty());
     }
@@ -99,7 +99,7 @@ class ConversationTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['conversations'][0]['name'],$this->conversation->name);        
+        $this->assertEquals($data['items'][0]['name'],$this->conversation->name);        
     }
 
     public function testDestroySuccess() {
@@ -115,7 +115,7 @@ class ConversationTest extends TestCase {
          * @todo Найти способ заставить работать assertJsonPath
          */
         $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['conversations'],[]);
+        $this->assertEquals($data['items'],[]);
     }
     
     public function testAddParticipant() {

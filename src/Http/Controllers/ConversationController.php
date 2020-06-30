@@ -25,8 +25,19 @@ class ConversationController extends Controller
     /**
      * Список всех бесед, доступных пользователю
      */
-    public function index() {
-        return response()->json(['success'=>true, 'conversations'=> Chat::getAllConversations()], 200);
+    public function index(Request $request) {
+        $paginator = Conversation::whereHas('users', function($query) {
+            $query->where('users.id', auth()->user()->id);
+        })->with('users.profile')->paginate($request->get('per_page', 10));
+
+        return [
+            'success' => true,
+            'current_page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'pages' => $paginator->lastItem(),
+            'items' => $paginator->items(),
+            'total' => $paginator->total()
+        ];
     }
 
     /**
