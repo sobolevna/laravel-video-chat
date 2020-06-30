@@ -68,7 +68,7 @@ class FileTest extends TestCase {
         $response= $this->actingAs($this->user, 'api')
             ->postJson($this->baseUrl, [
                 'files'=>[$file], 
-                'message_id'=>$this->message->id
+                'conversation_id'=>$this->conversation->id
             ]);
         
         $response->assertStatus(201);

@@ -58,11 +58,12 @@ class FileController extends Controller
     public function store(Request $request)
     {   
         $request->validate([
-            'message_id' => 'required|exists:messages,id',
+            'conversation_id' => 'required|exists:conversations,id',
+            'message_id' => 'exists:messages,id',
             'files' => 'array',
             'files.*' => 'file',
         ]);
-        $conversation = Message::find($request->get('message_id'))->conversation;
+        $conversation = Conversation::find($request->get('conversation_id'));
         if (!$conversation->users()->where('users.id', auth()->user()->id)->first()) {
             return [
                 'success' => false,
