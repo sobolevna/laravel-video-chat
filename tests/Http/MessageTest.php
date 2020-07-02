@@ -43,8 +43,6 @@ class MessageTest extends TestCase {
         ]);
         
         $this->baseUrl = '/api/chat/message';
-
-
     }
     
     /**
@@ -140,7 +138,7 @@ class MessageTest extends TestCase {
     }
 
     public function testDestroyFail() {
-        $newUser = factory(Helpers\User::class)->create(); 
+        $newUser = factory(Helpers\Profile::class)->create()->user;
         $message = $this->conversation->messages()->create([
             'user_id'=>$newUser->id,
             'text' =>'Another text'

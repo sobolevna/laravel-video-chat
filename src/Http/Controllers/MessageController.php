@@ -29,14 +29,16 @@ class MessageController extends Controller
         ]);
         $paginator = Message::when($request->get('conversation_id'), function($query) use ($request) {
             $query->where('conversation_id', $request->get('conversation_id'));
-        })->paginate($request->get('per_page', 50));
+        })->with('sender.profile')->orderBy('created_at', 'desc')->paginate($request->get('per_page', 50));
+
+        $items = $paginator->items();
         
         return [
             'success' => true,
             'current_page' => $paginator->currentPage(),
             'per_page' => $paginator->perPage(),
             'pages' => $paginator->lastItem(),
-            'items' => $paginator->items(),
+            'items' => !empty($items) ? MessageResource::collection($items) : [],
             'total' => $paginator->total()
         ];
     }
