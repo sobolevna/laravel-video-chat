@@ -5,7 +5,7 @@ namespace Sobolevna\LaravelVideoChat\Http\Controllers;
 use Illuminate\Http\{Request,Response};
 use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Services\Recordings;
-use Sobolevna\LaravelVideoChat\Http\Resources\MessageResourse;
+use Sobolevna\LaravelVideoChat\Http\Resources\MessageResource;
 use Illuminate\Routing\Controller;
 use Storage;
 use Sobolevna\LaravelVideoChat\Models\{Conversation, Message, File};
@@ -79,8 +79,8 @@ class MessageController extends Controller
             File::whereIn('id', $fileIds)->where('message_id', 0)->update(['message_id'=>$message->id]);            
         }
 
-        $resource = new MessageResourse($message);
-        $manager->sendSignal(new SignalProperties($conversation->id, json_encode($resource), 'message'));
+        $resource = new MessageResource($message);
+        $manager->sendSignal(new SignalProperties($conversation->id, json_encode($resource), 'signal:message'));
         
         return response()->json([
             'success' => true,

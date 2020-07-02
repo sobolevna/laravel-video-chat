@@ -5,7 +5,7 @@ namespace Sobolevna\LaravelVideoChat\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Sobolevna\LaravelVideoChat\Models\Message;
 
-class MessageResourse extends JsonResource {
+class MessageResource extends JsonResource {
     /**
      * Transform the resource into an array.
      *

@@ -85,7 +85,7 @@ class ConversationTest extends TestCase {
         $response= $this->actingAs($this->user, 'api')->getJson('/api/chat/conversation/'.$this->conversation->id);
         $response->assertStatus(200);
         $data = \json_decode($response->content(), true);
-        $this->assertEquals($data['conversation']['name'],$this->conversation->name);   
+        $this->assertEquals($data['name'],$this->conversation->name);   
     }
 
     public function testDestroyFail() {

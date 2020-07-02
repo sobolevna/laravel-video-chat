@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use Sobolevna\LaravelVideoChat\Events\NewConversationMessage;
 use Sobolevna\LaravelVideoChat\Events\VideoChatStart;
 use Sobolevna\LaravelVideoChat\Models\Conversation;
+use Sobolevna\LaravelVideoChat\Http\Resources\ConversationResource;
 use Sobolevna\LaravelVideoChat\Repositories\BaseRepository;
 use Sobolevna\LaravelVideoChat\Services\UploadManager;
 
@@ -80,17 +81,9 @@ class ConversationRepository extends BaseRepository
      */
     public function getConversationMessageById($conversationId, $channel = null)
     {
-        $conversation = $this->query()->with(['messages', 'messages.sender', 'messages.sender.profile', 'messages.files', 'users', 'users.profile', 'files'])->find($conversationId);
+        $conversation = $this->query()->with(['messages.sender.profile', 'messages.files', 'users', 'users.profile', 'files'])->find($conversationId);
 
-        $collection = (object) null;
-        $collection->id = $conversationId;
-        $collection->name = $conversation->name;
-        $collection->channel_name = $channel;
-        $collection->users = $conversation->users;
-        $collection->messages = $conversation->messages;
-        $collection->files = $conversation->files;
-        
-        return collect($collection);
+        return new ConversationResource($conversation);
     }
     
     /**

@@ -71,10 +71,7 @@ class ConversationController extends Controller
      */
     public function show($conversation, Request $request)
     {
-        return [
-            'success'=>true,
-            'conversation' => Chat::getConversationMessageById($conversation)
-        ];
+        return Chat::getConversationMessageById($conversation);
     }
 
     /**
