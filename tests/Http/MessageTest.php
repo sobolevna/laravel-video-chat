@@ -13,7 +13,7 @@ use Sobolevna\LaravelVideoChat\Http\Controllers\{MessageController};
 use Sobolevna\LaravelVideoChat\Tests\TestCase;
 use Sobolevna\LaravelVideoChat\Tests\Helpers;
 use Illuminate\Http\UploadedFile;
-use Chat;
+use Chat,Http;
 
 /**
  * 
@@ -32,7 +32,8 @@ class MessageTest extends TestCase {
     public function setUp() : void 
     {
         parent::setUp();      
-        $this->user = factory(Helpers\User::class)->create();
+        $profile = factory(Helpers\Profile::class)->create();
+        $this->user = $profile->user;
         $this->conversation = Conversation::create(['name'=>'conversation1']);
         $this->conversation->users()->attach($this->user->id);
         $this->message = $this->conversation->messages()->create([
@@ -42,6 +43,8 @@ class MessageTest extends TestCase {
         ]);
         
         $this->baseUrl = '/api/chat/message';
+
+
     }
     
     /**

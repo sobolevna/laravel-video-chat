@@ -18,7 +18,11 @@ class Profile extends \Illuminate\Database\Eloquent\Model{
     protected $table = 'profile';
     
     protected $fillable = [
-        'name',         
+        'first_name', 'middle_name', 'last_name', 'avatar'
     ];
+
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
 
 }

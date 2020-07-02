@@ -5,9 +5,11 @@ namespace Sobolevna\LaravelVideoChat\Http\Controllers;
 use Illuminate\Http\{Request,Response};
 use Sobolevna\LaravelVideoChat\Facades\Chat;
 use Sobolevna\LaravelVideoChat\Services\Recordings;
+use Sobolevna\LaravelVideoChat\Http\Resources\MessageResourse;
 use Illuminate\Routing\Controller;
 use Storage;
 use Sobolevna\LaravelVideoChat\Models\{Conversation, Message, File};
+use SquareetLabs\LaravelOpenVidu\{OpenVidu, SignalProperties};
 
 /**
  * @todo Логику перенести в сервисные классы
@@ -46,7 +48,7 @@ class MessageController extends Controller
      * @param Request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request, OpenVidu $manager)
     {
         $request->validate([
             'conversation_id' => 'required|exists:conversations,id'
@@ -76,10 +78,13 @@ class MessageController extends Controller
             $fileIds = collect($fileList)->pluck('id');
             File::whereIn('id', $fileIds)->where('message_id', 0)->update(['message_id'=>$message->id]);            
         }
+
+        $resource = new MessageResourse($message);
+        $manager->sendSignal(new SignalProperties($conversation->id, json_encode($resource), 'message'));
         
         return response()->json([
             'success' => true,
-            'message' => "Сообщение отправлено"
+            'message' => $resource
         ], 201);
     }
 

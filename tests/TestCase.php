@@ -11,6 +11,9 @@ namespace Sobolevna\LaravelVideoChat\Tests;
 use Orchestra\Testbench\TestCase as VendorTestCase;
 use Sobolevna\LaravelVideoChat\LaravelVideoChatServiceProvider;
 
+use SquareetLabs\LaravelOpenVidu\{OpenVidu, SignalProperties};
+use Mockery;
+
 abstract class TestCase extends VendorTestCase
 {
     /**
@@ -66,5 +69,6 @@ abstract class TestCase extends VendorTestCase
         $app['config']->set('laravel-video-chat.user.model', Helpers\User::class);
         $app['config']->set('logging.default', 'single');
         $app['config']->set('logging.channels.single.path', __DIR__.'/storage/logs/laravel.log');
+        $app->instance(OpenVidu::class, Mockery::mock(OpenVidu::class,  ['sendSignal' => true]));
     }
 }
