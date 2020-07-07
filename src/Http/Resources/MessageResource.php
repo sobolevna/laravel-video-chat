@@ -25,7 +25,7 @@ class MessageResource extends JsonResource {
                 'avatar' => $this->sender->profile->avatar,
             ],
             'created_at' => $this->created_at,
-            
+            'files' => $this->files
         ];
     }
 }
